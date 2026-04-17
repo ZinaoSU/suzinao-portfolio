@@ -1,145 +1,61 @@
-# 部署指南 - 苏梓铙个人作品集网站
+# 部署指南
 
-## 方式一：静态文件部署（推荐）
+## 仓库信息
+- **GitHub**: https://github.com/ZinaoSU/suzinao-portfolio
 
-### 步骤 1：构建生产版本
+## 前端部署 (Vercel)
 
-```bash
-cd suzinao-portfolio
-npm run build
-```
+### 步骤
+1. 访问 [vercel.com](https://vercel.com) 并登录
+2. 点击 **Add New** → **Project**
+3. 导入 `suzinao-portfolio` 仓库
+4. 配置：
+   - **Framework Preset**: `Vite`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+   - **Root Directory**: `/`
+5. 添加环境变量：
+   ```
+   VITE_API_BASE=https://your-railway-app.railway.app/api
+   ```
+6. 点击 **Deploy**
 
-构建完成后，`dist/` 目录包含所有静态文件。
+## 后端部署 (Railway)
 
-### 步骤 2：上传文件到服务器
+### 步骤
+1. 访问 [railway.app](https://railway.app) 并登录（GitHub 账号）
+2. 点击 **New Project** → **Deploy from GitHub repo**
+3. 选择 `suzinao-portfolio` 仓库
+4. 在 **Settings** → **Variables** 添加：
+   ```
+   OPENAI_API_KEY=sk-your-key-here
+   JWT_SECRET=your-super-secret-jwt-key-at-least-32-chars
+   DATABASE_URL=postgresql://user:password@host:5432/dbname
+   ```
+5. 在 **Settings** → **Start Command**：
+   ```
+   cd server && npm install && npx prisma db push && npm run build && npm start
+   ```
+6. 等待部署完成，获取后端 URL
 
-使用 SCP/SFTP 上传 `dist/` 目录内容到服务器：
+## 数据库 (Neon PostgreSQL)
 
-```bash
-scp -r dist/* user@your-server:/var/www/portfolio/
-```
+### 步骤
+1. 访问 [neon.tech](https://neon.tech) 并注册
+2. 创建新项目，获取 `DATABASE_URL`
+3. 将 URL 填入 Railway 环境变量
 
-### 步骤 3：配置 Nginx
+## 环境变量说明
 
-将 `nginx.conf` 文件内容添加到 Nginx 配置：
+| 变量 | 说明 | 示例 |
+|------|------|------|
+| `OPENAI_API_KEY` | OpenAI API Key | `sk-xxx` |
+| `JWT_SECRET` | JWT 密钥（至少32字符） | `your-secret-key-here` |
+| `DATABASE_URL` | PostgreSQL 连接字符串 | `postgresql://...` |
 
-```bash
-# 方法1：直接复制到 Nginx 配置目录
-sudo cp nginx.conf /etc/nginx/sites-available/portfolio
-sudo ln -s /etc/nginx/sites-available/portfolio /etc/nginx/sites-enabled/
+## 部署后测试
 
-# 方法2：追加到主配置文件
-sudo cat nginx.conf | sudo tee -a /etc/nginx/nginx.conf
-```
-
-### 步骤 4：重载 Nginx
-
-```bash
-sudo nginx -t  # 测试配置语法
-sudo systemctl reload nginx
-```
-
-### 步骤 5：配置域名和 SSL（可选）
-
-1. 在阿里云/腾讯云控制台添加域名解析
-2. 申请 SSL 证书（Let's Encrypt 免费）
-3. 按照 nginx.conf 中 HTTPS 配置示例启用 SSL
-
----
-
-## 方式二：Docker 部署
-
-### Dockerfile
-
-```dockerfile
-FROM nginx:alpine
-COPY dist/ /usr/share/nginx/html/
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-```
-
-### 构建和运行
-
-```bash
-docker build -t portfolio .
-docker run -d -p 8080:80 --name portfolio portfolio
-```
-
----
-
-## 方式三：Vercel/Netlify 部署（最简单）
-
-### Vercel
-
-1. 注册 [Vercel](https://vercel.com)
-2. 导入 GitHub 仓库或直接上传 `dist/` 文件夹
-3. 自动部署，获得免费 SSL
-
-### Netlify
-
-1. 注册 [Netlify](https://netlify.com)
-2. 拖拽 `dist/` 文件夹到部署区域
-3. 自动部署，获得免费 SSL
-
----
-
-## 常见问题
-
-### 1. 页面刷新 404
-
-确保 Nginx 配置中的 `try_files` 指令正确：
-
-```nginx
-location / {
-    try_files $uri $uri/ /index.html;
-}
-```
-
-### 2. 静态资源加载失败
-
-检查 Nginx 的 `root` 路径是否与实际文件路径一致。
-
-### 3. 跨域问题
-
-如果 API 调用有跨域问题，可在 Nginx 添加：
-
-```nginx
-add_header 'Access-Control-Allow-Origin' '*';
-```
-
----
-
-## 备案提醒
-
-如果使用国内服务器（阿里云/腾讯云），需要：
-- ICP 备案
-- 公安联网备案
-
-部署前请确保已完成备案流程。
-
----
-
-## 项目结构
-
-```
-suzinao-portfolio/
-├── dist/                 # 生产构建输出
-├── src/
-│   ├── components/       # React 组件
-│   │   ├── layout/       # 布局组件
-│   │   ├── sections/     # 页面区块
-│   │   └── ui/           # UI 原子组件
-│   ├── data/             # 数据文件
-│   │   └── i18n/         # 中英文翻译
-│   ├── hooks/            # 自定义 Hooks
-│   └── App.tsx           # 主应用
-├── nginx.conf            # Nginx 配置文件
-└── package.json
-```
-
----
-
-## 联系方式
-
-如有问题，请联系：suzinao.apply@gmail.com
+1. 打开 Vercel 部署的网站
+2. 滚动到 AI Lab 区域
+3. 测试简历对话助手
+4. 测试面试复盘助手（需登录）
