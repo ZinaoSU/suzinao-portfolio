@@ -1,0 +1,84 @@
+{
+  "profile": {
+    "name": "Su Zinao",
+    "title": "Product Manager / AI Product",
+    "location": "Hong Kong",
+    "phone": "18948666031",
+    "email": "suzinao.apply@gmail.com",
+    "whatsapp": "+852 84956448",
+    "mbti": "ENTJ",
+    "hobbies": ["Hiking", "Swimming", "Cooking"],
+    "summary": "Passionate about the intersection of AI and product, dedicated to transforming cutting-edge AI technology into user-loved product solutions."
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "education": "Education",
+    "experience": "Experience",
+    "projects": "Projects",
+    "skills": "Skills",
+    "contact": "Contact"
+  },
+  "ailab": {
+    "title": "AI Tools",
+    "subtitle": "My AI playground where I solve real problems with AI. Try them out!",
+    "badge": "AI Lab"
+  },
+  "hero": {
+    "greeting": "Hello, I'm",
+    "role": "AI Product Manager",
+    "description": "Focused on transforming cutting-edge AI technology into user-loved product solutions",
+    "cta": "Learn More",
+    "downloadCV": "Download CV"
+  },
+  "about": {
+    "title": "About Me",
+    "subtitle": "Get to know me better",
+    "mbtiTitle": "Personality",
+    "hobbiesTitle": "Hobbies"
+  },
+  "education": {
+    "title": "Education",
+    "subtitle": "Academic Achievements",
+    "degree": "Degree",
+    "gpa": "GPA",
+    "honors": "Honors"
+  },
+  "experience": {
+    "title": "Work Experience",
+    "subtitle": "Career Journey",
+    "role": "Role",
+    "duration": "Duration",
+    "achievements": "Key Achievements",
+    "viewDetails": "View Details"
+  },
+  "projects": {
+    "title": "Projects",
+    "subtitle": "Hands-on Work",
+    "viewDetails": "View Details",
+    "role": "Role",
+    "tech": "Tech Stack",
+    "highlights": "Highlights"
+  },
+  "skills": {
+    "title": "Skills",
+    "subtitle": "Professional Abilities",
+    "product": "Product Tools",
+    "programming": "Programming",
+    "ai": "AI/ML Skills",
+    "languages": "Languages"
+  },
+  "contact": {
+    "title": "Contact",
+    "subtitle": "Let's Connect",
+    "email": "Email",
+    "phone": "Phone",
+    "whatsapp": "WhatsApp",
+    "downloadCV": "Download CV PDF",
+    "connect": "Stay Connected"
+  },
+  "footer": {
+    "copyright": "All Rights Reserved",
+    "madeWith": "Crafted with care"
+  }
+}

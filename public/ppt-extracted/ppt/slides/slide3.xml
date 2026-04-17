@@ -1,0 +1,789 @@
+<?xml version="1.0" encoding="utf-8"?>
+<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
+  <p:cSld>
+    <p:spTree>
+      <p:nvGrpSpPr>
+        <p:cNvPr id="1" name=""/>
+        <p:cNvGrpSpPr/>
+        <p:nvPr/>
+      </p:nvGrpSpPr>
+      <p:grpSpPr>
+        <a:xfrm>
+          <a:off x="0" y="0"/>
+          <a:ext cx="0" cy="0"/>
+          <a:chOff x="0" y="0"/>
+          <a:chExt cx="0" cy="0"/>
+        </a:xfrm>
+      </p:grpSpPr>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="2" name="TextBox 2"/>
+          <p:cNvSpPr txBox="1"/>
+          <p:nvPr/>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="9895096" y="7791899"/>
+            <a:ext cx="7003603" cy="1911292"/>
+          </a:xfrm>
+          <a:prstGeom prst="rect">
+            <a:avLst/>
+          </a:prstGeom>
+        </p:spPr>
+        <p:txBody>
+          <a:bodyPr wrap="square" lIns="0" tIns="0" rIns="0" bIns="0" rtlCol="0" anchor="t">
+            <a:spAutoFit/>
+          </a:bodyPr>
+          <a:lstStyle/>
+          <a:p>
+            <a:pPr>
+              <a:lnSpc>
+                <a:spcPts val="3836"/>
+              </a:lnSpc>
+              <a:spcBef>
+                <a:spcPct val="0"/>
+              </a:spcBef>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-US" sz="2740" spc="211">
+                <a:solidFill>
+                  <a:srgbClr val="000000"/>
+                </a:solidFill>
+                <a:latin typeface="思源黑体"/>
+                <a:ea typeface="思源黑体"/>
+                <a:cs typeface="思源黑体"/>
+                <a:sym typeface="思源黑体"/>
+              </a:rPr>
+              <a:t>Hobbies:</a:t>
+            </a:r>
+          </a:p>
+          <a:p>
+            <a:pPr marL="457200" indent="-457200">
+              <a:lnSpc>
+                <a:spcPts val="3836"/>
+              </a:lnSpc>
+              <a:spcBef>
+                <a:spcPct val="0"/>
+              </a:spcBef>
+              <a:buFont typeface="Arial" panose="020B0604020202020204" pitchFamily="34" charset="0"/>
+              <a:buChar char="•"/>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-US" sz="2740" spc="211">
+                <a:solidFill>
+                  <a:srgbClr val="000000"/>
+                </a:solidFill>
+                <a:latin typeface="思源黑体"/>
+                <a:ea typeface="思源黑体"/>
+                <a:cs typeface="思源黑体"/>
+                <a:sym typeface="思源黑体"/>
+              </a:rPr>
+              <a:t> hiking</a:t>
+            </a:r>
+          </a:p>
+          <a:p>
+            <a:pPr marL="457200" indent="-457200">
+              <a:lnSpc>
+                <a:spcPts val="3836"/>
+              </a:lnSpc>
+              <a:spcBef>
+                <a:spcPct val="0"/>
+              </a:spcBef>
+              <a:buFont typeface="Arial" panose="020B0604020202020204" pitchFamily="34" charset="0"/>
+              <a:buChar char="•"/>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-US" sz="2740" spc="211">
+                <a:solidFill>
+                  <a:srgbClr val="000000"/>
+                </a:solidFill>
+                <a:latin typeface="思源黑体"/>
+                <a:ea typeface="思源黑体"/>
+                <a:cs typeface="思源黑体"/>
+                <a:sym typeface="思源黑体"/>
+              </a:rPr>
+              <a:t> swimming</a:t>
+            </a:r>
+          </a:p>
+          <a:p>
+            <a:pPr marL="457200" indent="-457200">
+              <a:lnSpc>
+                <a:spcPts val="3836"/>
+              </a:lnSpc>
+              <a:spcBef>
+                <a:spcPct val="0"/>
+              </a:spcBef>
+              <a:buFont typeface="Arial" panose="020B0604020202020204" pitchFamily="34" charset="0"/>
+              <a:buChar char="•"/>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-US" sz="2740" spc="211">
+                <a:solidFill>
+                  <a:srgbClr val="000000"/>
+                </a:solidFill>
+                <a:latin typeface="思源黑体"/>
+                <a:ea typeface="思源黑体"/>
+                <a:cs typeface="思源黑体"/>
+                <a:sym typeface="思源黑体"/>
+              </a:rPr>
+              <a:t>cookin</a:t>
+            </a:r>
+            <a:r>
+              <a:rPr lang="en-US" altLang="zh-CN" sz="2740" spc="211">
+                <a:solidFill>
+                  <a:srgbClr val="000000"/>
+                </a:solidFill>
+                <a:latin typeface="思源黑体"/>
+                <a:ea typeface="思源黑体"/>
+                <a:cs typeface="思源黑体"/>
+                <a:sym typeface="思源黑体"/>
+              </a:rPr>
+              <a:t>g</a:t>
+            </a:r>
+            <a:endParaRPr lang="en-US" sz="2740" spc="211">
+              <a:solidFill>
+                <a:srgbClr val="000000"/>
+              </a:solidFill>
+              <a:latin typeface="思源黑体"/>
+              <a:ea typeface="思源黑体"/>
+              <a:cs typeface="思源黑体"/>
+              <a:sym typeface="思源黑体"/>
+            </a:endParaRPr>
+          </a:p>
+        </p:txBody>
+      </p:sp>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="3" name="Freeform 3"/>
+          <p:cNvSpPr/>
+          <p:nvPr/>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm rot="-5043361">
+            <a:off x="-4850213" y="4524335"/>
+            <a:ext cx="10323586" cy="5086712"/>
+          </a:xfrm>
+          <a:custGeom>
+            <a:avLst/>
+            <a:gdLst/>
+            <a:ahLst/>
+            <a:cxnLst/>
+            <a:rect l="l" t="t" r="r" b="b"/>
+            <a:pathLst>
+              <a:path w="10323586" h="5086712">
+                <a:moveTo>
+                  <a:pt x="0" y="0"/>
+                </a:moveTo>
+                <a:lnTo>
+                  <a:pt x="10323586" y="0"/>
+                </a:lnTo>
+                <a:lnTo>
+                  <a:pt x="10323586" y="5086713"/>
+                </a:lnTo>
+                <a:lnTo>
+                  <a:pt x="0" y="5086713"/>
+                </a:lnTo>
+                <a:lnTo>
+                  <a:pt x="0" y="0"/>
+                </a:lnTo>
+                <a:close/>
+              </a:path>
+            </a:pathLst>
+          </a:custGeom>
+          <a:blipFill>
+            <a:blip r:embed="rId2">
+              <a:extLst>
+                <a:ext uri="{96DAC541-7B7A-43D3-8B79-37D633B846F1}">
+                  <asvg:svgBlip xmlns:asvg="http://schemas.microsoft.com/office/drawing/2016/SVG/main" r:embed="rId3"/>
+                </a:ext>
+              </a:extLst>
+            </a:blip>
+            <a:stretch>
+              <a:fillRect/>
+            </a:stretch>
+          </a:blipFill>
+        </p:spPr>
+      </p:sp>
+      <p:grpSp>
+        <p:nvGrpSpPr>
+          <p:cNvPr id="4" name="Group 4"/>
+          <p:cNvGrpSpPr>
+            <a:grpSpLocks noChangeAspect="1"/>
+          </p:cNvGrpSpPr>
+          <p:nvPr/>
+        </p:nvGrpSpPr>
+        <p:grpSpPr>
+          <a:xfrm>
+            <a:off x="1336551" y="1209383"/>
+            <a:ext cx="7689734" cy="6882777"/>
+            <a:chOff x="-11430" y="857250"/>
+            <a:chExt cx="13009880" cy="11644630"/>
+          </a:xfrm>
+        </p:grpSpPr>
+        <p:sp>
+          <p:nvSpPr>
+            <p:cNvPr id="5" name="Freeform 5"/>
+            <p:cNvSpPr/>
+            <p:nvPr/>
+          </p:nvSpPr>
+          <p:spPr>
+            <a:xfrm>
+              <a:off x="125908" y="857250"/>
+              <a:ext cx="12396490" cy="11506076"/>
+            </a:xfrm>
+            <a:custGeom>
+              <a:avLst/>
+              <a:gdLst/>
+              <a:ahLst/>
+              <a:cxnLst/>
+              <a:rect l="l" t="t" r="r" b="b"/>
+              <a:pathLst>
+                <a:path w="12396490" h="11506076">
+                  <a:moveTo>
+                    <a:pt x="10015042" y="938530"/>
+                  </a:moveTo>
+                  <a:cubicBezTo>
+                    <a:pt x="8825052" y="189230"/>
+                    <a:pt x="8506282" y="154940"/>
+                    <a:pt x="7108012" y="0"/>
+                  </a:cubicBezTo>
+                  <a:cubicBezTo>
+                    <a:pt x="3902532" y="38100"/>
+                    <a:pt x="1304112" y="1889760"/>
+                    <a:pt x="298272" y="4933950"/>
+                  </a:cubicBezTo>
+                  <a:cubicBezTo>
+                    <a:pt x="-45898" y="5975350"/>
+                    <a:pt x="-137338" y="7139940"/>
+                    <a:pt x="266522" y="8159750"/>
+                  </a:cubicBezTo>
+                  <a:cubicBezTo>
+                    <a:pt x="797382" y="9499600"/>
+                    <a:pt x="2116911" y="10407650"/>
+                    <a:pt x="3511372" y="10773410"/>
+                  </a:cubicBezTo>
+                  <a:cubicBezTo>
+                    <a:pt x="4905831" y="11140440"/>
+                    <a:pt x="6441262" y="11644630"/>
+                    <a:pt x="7871281" y="11470640"/>
+                  </a:cubicBezTo>
+                  <a:cubicBezTo>
+                    <a:pt x="8986341" y="11334750"/>
+                    <a:pt x="10100131" y="10519410"/>
+                    <a:pt x="10934522" y="9767570"/>
+                  </a:cubicBezTo>
+                  <a:cubicBezTo>
+                    <a:pt x="11488241" y="9268460"/>
+                    <a:pt x="11833681" y="8576310"/>
+                    <a:pt x="12064822" y="7867650"/>
+                  </a:cubicBezTo>
+                  <a:cubicBezTo>
+                    <a:pt x="12872541" y="5401310"/>
+                    <a:pt x="12210872" y="2322830"/>
+                    <a:pt x="10015042" y="938530"/>
+                  </a:cubicBezTo>
+                  <a:close/>
+                </a:path>
+              </a:pathLst>
+            </a:custGeom>
+            <a:solidFill>
+              <a:srgbClr val="FFB558"/>
+            </a:solidFill>
+            <a:ln w="12700">
+              <a:solidFill>
+                <a:srgbClr val="000000"/>
+              </a:solidFill>
+            </a:ln>
+          </p:spPr>
+        </p:sp>
+      </p:grpSp>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="8" name="TextBox 8"/>
+          <p:cNvSpPr txBox="1"/>
+          <p:nvPr/>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="9831358" y="2345840"/>
+            <a:ext cx="3565540" cy="386796"/>
+          </a:xfrm>
+          <a:prstGeom prst="rect">
+            <a:avLst/>
+          </a:prstGeom>
+        </p:spPr>
+        <p:txBody>
+          <a:bodyPr lIns="0" tIns="0" rIns="0" bIns="0" rtlCol="0" anchor="t">
+            <a:spAutoFit/>
+          </a:bodyPr>
+          <a:lstStyle/>
+          <a:p>
+            <a:pPr algn="l">
+              <a:lnSpc>
+                <a:spcPts val="3067"/>
+              </a:lnSpc>
+              <a:spcBef>
+                <a:spcPct val="0"/>
+              </a:spcBef>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-US" sz="2191" b="1" spc="142">
+                <a:solidFill>
+                  <a:srgbClr val="FFB558"/>
+                </a:solidFill>
+                <a:latin typeface="Aharoni CLM Bold"/>
+                <a:ea typeface="Aharoni CLM Bold"/>
+                <a:cs typeface="Aharoni CLM Bold"/>
+                <a:sym typeface="Aharoni CLM Bold"/>
+              </a:rPr>
+              <a:t>SELF INTRODUCTION</a:t>
+            </a:r>
+          </a:p>
+        </p:txBody>
+      </p:sp>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="9" name="TextBox 9"/>
+          <p:cNvSpPr txBox="1"/>
+          <p:nvPr/>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="13211090" y="3938141"/>
+            <a:ext cx="4610730" cy="549125"/>
+          </a:xfrm>
+          <a:prstGeom prst="rect">
+            <a:avLst/>
+          </a:prstGeom>
+        </p:spPr>
+        <p:txBody>
+          <a:bodyPr wrap="square" lIns="0" tIns="0" rIns="0" bIns="0" rtlCol="0" anchor="t">
+            <a:spAutoFit/>
+          </a:bodyPr>
+          <a:lstStyle/>
+          <a:p>
+            <a:pPr algn="l">
+              <a:lnSpc>
+                <a:spcPts val="3814"/>
+              </a:lnSpc>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-US" sz="6000" b="1" spc="177">
+                <a:solidFill>
+                  <a:srgbClr val="FFB558"/>
+                </a:solidFill>
+                <a:latin typeface="思源黑体 Bold"/>
+                <a:ea typeface="思源黑体 Bold"/>
+                <a:cs typeface="思源黑体 Bold"/>
+                <a:sym typeface="思源黑体 Bold"/>
+              </a:rPr>
+              <a:t>SU ZINAO</a:t>
+            </a:r>
+          </a:p>
+        </p:txBody>
+      </p:sp>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="10" name="TextBox 10"/>
+          <p:cNvSpPr txBox="1"/>
+          <p:nvPr/>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="9831358" y="1603595"/>
+            <a:ext cx="2946210" cy="648319"/>
+          </a:xfrm>
+          <a:prstGeom prst="rect">
+            <a:avLst/>
+          </a:prstGeom>
+        </p:spPr>
+        <p:txBody>
+          <a:bodyPr lIns="0" tIns="0" rIns="0" bIns="0" rtlCol="0" anchor="t">
+            <a:spAutoFit/>
+          </a:bodyPr>
+          <a:lstStyle/>
+          <a:p>
+            <a:pPr algn="l">
+              <a:lnSpc>
+                <a:spcPts val="5459"/>
+              </a:lnSpc>
+              <a:spcBef>
+                <a:spcPct val="0"/>
+              </a:spcBef>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="zh-CN" altLang="en-US" sz="3899" spc="226">
+                <a:solidFill>
+                  <a:srgbClr val="000000"/>
+                </a:solidFill>
+                <a:latin typeface="思源黑体"/>
+                <a:ea typeface="思源黑体"/>
+                <a:cs typeface="思源黑体"/>
+                <a:sym typeface="思源黑体"/>
+              </a:rPr>
+              <a:t>个人介绍</a:t>
+            </a:r>
+            <a:endParaRPr lang="en-US" sz="3899" spc="226">
+              <a:solidFill>
+                <a:srgbClr val="000000"/>
+              </a:solidFill>
+              <a:latin typeface="思源黑体"/>
+              <a:ea typeface="思源黑体"/>
+              <a:cs typeface="思源黑体"/>
+              <a:sym typeface="思源黑体"/>
+            </a:endParaRPr>
+          </a:p>
+        </p:txBody>
+      </p:sp>
+      <p:pic>
+        <p:nvPicPr>
+          <p:cNvPr id="18" name="图片 17">
+            <a:extLst>
+              <a:ext uri="{FF2B5EF4-FFF2-40B4-BE49-F238E27FC236}">
+                <a16:creationId xmlns:a16="http://schemas.microsoft.com/office/drawing/2014/main" id="{E2E4E964-2579-A5F5-10A2-63A61B7359C3}"/>
+              </a:ext>
+            </a:extLst>
+          </p:cNvPr>
+          <p:cNvPicPr>
+            <a:picLocks noChangeAspect="1"/>
+          </p:cNvPicPr>
+          <p:nvPr/>
+        </p:nvPicPr>
+        <p:blipFill>
+          <a:blip r:embed="rId4">
+            <a:extLst>
+              <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+              </a:ext>
+            </a:extLst>
+          </a:blip>
+          <a:srcRect t="12592" b="20031"/>
+          <a:stretch>
+            <a:fillRect/>
+          </a:stretch>
+        </p:blipFill>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="1885533" y="1144320"/>
+            <a:ext cx="6859372" cy="6931007"/>
+          </a:xfrm>
+          <a:prstGeom prst="ellipse">
+            <a:avLst/>
+          </a:prstGeom>
+          <a:ln>
+            <a:noFill/>
+          </a:ln>
+          <a:effectLst>
+            <a:softEdge rad="112500"/>
+          </a:effectLst>
+        </p:spPr>
+      </p:pic>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="11" name="TextBox 11"/>
+          <p:cNvSpPr txBox="1"/>
+          <p:nvPr/>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="9838792" y="4815328"/>
+            <a:ext cx="7694642" cy="2271584"/>
+          </a:xfrm>
+          <a:prstGeom prst="rect">
+            <a:avLst/>
+          </a:prstGeom>
+        </p:spPr>
+        <p:txBody>
+          <a:bodyPr wrap="square" lIns="0" tIns="0" rIns="0" bIns="0" rtlCol="0" anchor="t">
+            <a:spAutoFit/>
+          </a:bodyPr>
+          <a:lstStyle/>
+          <a:p>
+            <a:pPr algn="l">
+              <a:lnSpc>
+                <a:spcPts val="3597"/>
+              </a:lnSpc>
+              <a:spcBef>
+                <a:spcPct val="0"/>
+              </a:spcBef>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-US" sz="2569" spc="149">
+                <a:solidFill>
+                  <a:srgbClr val="000000"/>
+                </a:solidFill>
+                <a:latin typeface="思源黑体"/>
+                <a:ea typeface="思源黑体"/>
+                <a:cs typeface="思源黑体"/>
+                <a:sym typeface="思源黑体"/>
+              </a:rPr>
+              <a:t>Master&#x2019;s student in Data Analytics &amp; AI, skilled in AI-driven product development. Experienced at ByteDance, Tencent, DJI, Fadada, focusing on compliance/automation with measurable outcomes.</a:t>
+            </a:r>
+          </a:p>
+        </p:txBody>
+      </p:sp>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="12" name="TextBox 12"/>
+          <p:cNvSpPr txBox="1"/>
+          <p:nvPr/>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="9831358" y="3400716"/>
+            <a:ext cx="3379732" cy="1250055"/>
+          </a:xfrm>
+          <a:prstGeom prst="rect">
+            <a:avLst/>
+          </a:prstGeom>
+        </p:spPr>
+        <p:txBody>
+          <a:bodyPr lIns="0" tIns="0" rIns="0" bIns="0" rtlCol="0" anchor="t">
+            <a:spAutoFit/>
+          </a:bodyPr>
+          <a:lstStyle/>
+          <a:p>
+            <a:pPr algn="l">
+              <a:lnSpc>
+                <a:spcPts val="10228"/>
+              </a:lnSpc>
+              <a:spcBef>
+                <a:spcPct val="0"/>
+              </a:spcBef>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="zh-CN" altLang="en-US" sz="7306">
+                <a:solidFill>
+                  <a:srgbClr val="000000"/>
+                </a:solidFill>
+                <a:latin typeface="字由点字倔强黑"/>
+                <a:ea typeface="字由点字倔强黑"/>
+                <a:cs typeface="字由点字倔强黑"/>
+                <a:sym typeface="字由点字倔强黑"/>
+              </a:rPr>
+              <a:t>苏梓铙</a:t>
+            </a:r>
+            <a:endParaRPr lang="en-US" sz="7306">
+              <a:solidFill>
+                <a:srgbClr val="000000"/>
+              </a:solidFill>
+              <a:latin typeface="字由点字倔强黑"/>
+              <a:ea typeface="字由点字倔强黑"/>
+              <a:cs typeface="字由点字倔强黑"/>
+              <a:sym typeface="字由点字倔强黑"/>
+            </a:endParaRPr>
+          </a:p>
+        </p:txBody>
+      </p:sp>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="13" name="Freeform 13"/>
+          <p:cNvSpPr/>
+          <p:nvPr/>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm rot="5673691">
+            <a:off x="13381933" y="-2043311"/>
+            <a:ext cx="11479700" cy="5656361"/>
+          </a:xfrm>
+          <a:custGeom>
+            <a:avLst/>
+            <a:gdLst/>
+            <a:ahLst/>
+            <a:cxnLst/>
+            <a:rect l="l" t="t" r="r" b="b"/>
+            <a:pathLst>
+              <a:path w="11479700" h="5656361">
+                <a:moveTo>
+                  <a:pt x="0" y="0"/>
+                </a:moveTo>
+                <a:lnTo>
+                  <a:pt x="11479700" y="0"/>
+                </a:lnTo>
+                <a:lnTo>
+                  <a:pt x="11479700" y="5656361"/>
+                </a:lnTo>
+                <a:lnTo>
+                  <a:pt x="0" y="5656361"/>
+                </a:lnTo>
+                <a:lnTo>
+                  <a:pt x="0" y="0"/>
+                </a:lnTo>
+                <a:close/>
+              </a:path>
+            </a:pathLst>
+          </a:custGeom>
+          <a:blipFill>
+            <a:blip r:embed="rId2">
+              <a:extLst>
+                <a:ext uri="{96DAC541-7B7A-43D3-8B79-37D633B846F1}">
+                  <asvg:svgBlip xmlns:asvg="http://schemas.microsoft.com/office/drawing/2016/SVG/main" r:embed="rId3"/>
+                </a:ext>
+              </a:extLst>
+            </a:blip>
+            <a:stretch>
+              <a:fillRect/>
+            </a:stretch>
+          </a:blipFill>
+        </p:spPr>
+      </p:sp>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="14" name="Freeform 14"/>
+          <p:cNvSpPr/>
+          <p:nvPr/>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm rot="5986235">
+            <a:off x="14044696" y="-1366193"/>
+            <a:ext cx="11479700" cy="5656361"/>
+          </a:xfrm>
+          <a:custGeom>
+            <a:avLst/>
+            <a:gdLst/>
+            <a:ahLst/>
+            <a:cxnLst/>
+            <a:rect l="l" t="t" r="r" b="b"/>
+            <a:pathLst>
+              <a:path w="11479700" h="5656361">
+                <a:moveTo>
+                  <a:pt x="0" y="0"/>
+                </a:moveTo>
+                <a:lnTo>
+                  <a:pt x="11479700" y="0"/>
+                </a:lnTo>
+                <a:lnTo>
+                  <a:pt x="11479700" y="5656361"/>
+                </a:lnTo>
+                <a:lnTo>
+                  <a:pt x="0" y="5656361"/>
+                </a:lnTo>
+                <a:lnTo>
+                  <a:pt x="0" y="0"/>
+                </a:lnTo>
+                <a:close/>
+              </a:path>
+            </a:pathLst>
+          </a:custGeom>
+          <a:blipFill>
+            <a:blip r:embed="rId2">
+              <a:extLst>
+                <a:ext uri="{96DAC541-7B7A-43D3-8B79-37D633B846F1}">
+                  <asvg:svgBlip xmlns:asvg="http://schemas.microsoft.com/office/drawing/2016/SVG/main" r:embed="rId3"/>
+                </a:ext>
+              </a:extLst>
+            </a:blip>
+            <a:stretch>
+              <a:fillRect/>
+            </a:stretch>
+          </a:blipFill>
+        </p:spPr>
+      </p:sp>
+      <p:grpSp>
+        <p:nvGrpSpPr>
+          <p:cNvPr id="15" name="Group 15"/>
+          <p:cNvGrpSpPr/>
+          <p:nvPr/>
+        </p:nvGrpSpPr>
+        <p:grpSpPr>
+          <a:xfrm rot="-10800000">
+            <a:off x="9919978" y="7252455"/>
+            <a:ext cx="6014715" cy="253765"/>
+            <a:chOff x="0" y="0"/>
+            <a:chExt cx="13545650" cy="571500"/>
+          </a:xfrm>
+        </p:grpSpPr>
+        <p:sp>
+          <p:nvSpPr>
+            <p:cNvPr id="16" name="Freeform 16"/>
+            <p:cNvSpPr/>
+            <p:nvPr/>
+          </p:nvSpPr>
+          <p:spPr>
+            <a:xfrm>
+              <a:off x="0" y="255270"/>
+              <a:ext cx="13545649" cy="69850"/>
+            </a:xfrm>
+            <a:custGeom>
+              <a:avLst/>
+              <a:gdLst/>
+              <a:ahLst/>
+              <a:cxnLst/>
+              <a:rect l="l" t="t" r="r" b="b"/>
+              <a:pathLst>
+                <a:path w="13545649" h="69850">
+                  <a:moveTo>
+                    <a:pt x="13254820" y="0"/>
+                  </a:moveTo>
+                  <a:lnTo>
+                    <a:pt x="0" y="0"/>
+                  </a:lnTo>
+                  <a:lnTo>
+                    <a:pt x="0" y="69850"/>
+                  </a:lnTo>
+                  <a:lnTo>
+                    <a:pt x="13545649" y="69850"/>
+                  </a:lnTo>
+                  <a:lnTo>
+                    <a:pt x="13545649" y="0"/>
+                  </a:lnTo>
+                  <a:close/>
+                </a:path>
+              </a:pathLst>
+            </a:custGeom>
+            <a:solidFill>
+              <a:srgbClr val="FFA25A"/>
+            </a:solidFill>
+          </p:spPr>
+        </p:sp>
+      </p:grpSp>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="19" name="文本框 18">
+            <a:extLst>
+              <a:ext uri="{FF2B5EF4-FFF2-40B4-BE49-F238E27FC236}">
+                <a16:creationId xmlns:a16="http://schemas.microsoft.com/office/drawing/2014/main" id="{FFD61E5C-8666-6896-0AB1-96872F2916CC}"/>
+              </a:ext>
+            </a:extLst>
+          </p:cNvPr>
+          <p:cNvSpPr txBox="1"/>
+          <p:nvPr/>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="14869718" y="8135960"/>
+            <a:ext cx="1952710" cy="830997"/>
+          </a:xfrm>
+          <a:prstGeom prst="rect">
+            <a:avLst/>
+          </a:prstGeom>
+          <a:noFill/>
+        </p:spPr>
+        <p:txBody>
+          <a:bodyPr wrap="square" rtlCol="0">
+            <a:spAutoFit/>
+          </a:bodyPr>
+          <a:lstStyle/>
+          <a:p>
+            <a:r>
+              <a:rPr lang="en-US" altLang="zh-CN" sz="4800">
+                <a:solidFill>
+                  <a:srgbClr val="FFB558"/>
+                </a:solidFill>
+              </a:rPr>
+              <a:t>ENTJ</a:t>
+            </a:r>
+            <a:endParaRPr lang="zh-CN" altLang="en-US" sz="4800">
+              <a:solidFill>
+                <a:srgbClr val="FFB558"/>
+              </a:solidFill>
+            </a:endParaRPr>
+          </a:p>
+        </p:txBody>
+      </p:sp>
+    </p:spTree>
+  </p:cSld>
+  <p:clrMapOvr>
+    <a:masterClrMapping/>
+  </p:clrMapOvr>
+</p:sld>

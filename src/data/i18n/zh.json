@@ -1,0 +1,84 @@
+{
+  "profile": {
+    "name": "苏梓铙",
+    "title": "产品经理 / AI产品",
+    "location": "香港",
+    "phone": "18948666031",
+    "email": "suzinao.apply@gmail.com",
+    "whatsapp": "+852 84956448",
+    "mbti": "ENTJ",
+    "hobbies": ["Hiking", "Swimming", "Cooking"],
+    "summary": "热爱AI与产品交叉领域，致力于将AI技术转化为用户喜爱的产品解决方案。"
+  },
+  "nav": {
+    "home": "首页",
+    "about": "关于我",
+    "education": "教育背景",
+    "experience": "工作经历",
+    "projects": "项目经历",
+    "skills": "技能专长",
+    "contact": "联系方式"
+  },
+  "ailab": {
+    "title": "AI 小工具",
+    "subtitle": "这里是我的 AI 实践场，用 AI 解决真实问题。快来体验吧！",
+    "badge": "AI 实验区"
+  },
+  "hero": {
+    "greeting": "你好，我是",
+    "role": "AI产品经理",
+    "description": "专注将前沿AI技术转化为用户喜爱的产品解决方案",
+    "cta": "了解更多",
+    "downloadCV": "下载简历"
+  },
+  "about": {
+    "title": "关于我",
+    "subtitle": "了解我的更多信息",
+    "mbtiTitle": "性格特质",
+    "hobbiesTitle": "兴趣爱好"
+  },
+  "education": {
+    "title": "教育背景",
+    "subtitle": "学术成就",
+    "degree": "学位",
+    "gpa": "GPA",
+    "honors": "荣誉"
+  },
+  "experience": {
+    "title": "工作经历",
+    "subtitle": "职业旅程",
+    "role": "职位",
+    "duration": "时间",
+    "achievements": "主要成就",
+    "viewDetails": "查看详情"
+  },
+  "projects": {
+    "title": "项目经历",
+    "subtitle": "实战作品",
+    "viewDetails": "查看详情",
+    "role": "角色",
+    "tech": "技术栈",
+    "highlights": "项目亮点"
+  },
+  "skills": {
+    "title": "技能专长",
+    "subtitle": "专业能力",
+    "product": "产品工具",
+    "programming": "编程语言",
+    "ai": "AI/ML技能",
+    "languages": "语言能力"
+  },
+  "contact": {
+    "title": "联系方式",
+    "subtitle": "期待交流",
+    "email": "邮箱",
+    "phone": "电话",
+    "whatsapp": "WhatsApp",
+    "downloadCV": "下载简历PDF",
+    "connect": "保持联系"
+  },
+  "footer": {
+    "copyright": "版权所有",
+    "madeWith": "用心制作"
+  }
+}
