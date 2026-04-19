@@ -59,12 +59,7 @@ interviewRouter.get('/history', authenticate, async (req: AuthRequest, res, next
           id: true,
           title: true,
           createdAt: true,
-          updatedAt: true,
-          _count: {
-            select: {
-              // No related records in current schema
-            }
-          }
+          updatedAt: true
         }
       }),
       prisma.interview.count({
