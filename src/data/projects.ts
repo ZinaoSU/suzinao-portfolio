@@ -43,10 +43,10 @@ export const projectsData: Project[] = [
     metrics: '+284%',
     metricsZh: '+284%',
     images: [
-      '/images/image1.png',
-      '/images/image3.png',
-      '/images/image6.png',
-      '/images/image8.png',
+      '/images/image27.png',
+      '/images/image28.png',
+      '/images/image29.png',
+      '/images/image30.png',
     ],
   },
   {
@@ -74,10 +74,10 @@ export const projectsData: Project[] = [
     metrics: '+25% Accuracy',
     metricsZh: '+25%准确率',
     images: [
-      '/images/image26.png',
-      '/images/image32.png',
-      '/images/image35.png',
-      '/images/image36.png',
+      '/images/image21.png',
+      '/images/image21.png',
+      '/images/image21.png',
+      '/images/image21.png',
     ],
   },
   {
@@ -105,10 +105,10 @@ export const projectsData: Project[] = [
     metrics: 'A-Level',
     metricsZh: 'A级评价',
     images: [
-      '/images/image29.png',
-      '/images/image30.png',
-      '/images/image31.png',
-      '/images/image37.png',
+      '/images/image32.png',
+      '/images/image33.png',
+      '/images/image34.png',
+      '/images/image35.png',
     ],
   },
 ];

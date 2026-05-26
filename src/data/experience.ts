@@ -35,10 +35,9 @@ export const experienceData: Experience[] = [
     highlight: 'AI + Sports',
     highlightZh: 'AI + 运动',
     images: [
-      '/images/image13.png',
-      '/images/image16.png',
-      '/images/image17.png',
-      '/images/image27.png',
+      '/images/image3.png',
+      '/images/image2.png',
+      '/images/image1.png',
     ],
   },
   {
@@ -62,10 +61,9 @@ export const experienceData: Experience[] = [
     highlight: '1.3M Orders',
     highlightZh: '130万订单',
     images: [
-      '/images/image3.png',
-      '/images/image6.png',
-      '/images/image8.png',
-      '/images/image9.png',
+      '/images/image13.png',
+      '/images/image16.png',
+      '/images/image17.png',
     ],
   },
   {
@@ -89,10 +87,10 @@ export const experienceData: Experience[] = [
     highlight: '200+ Trained',
     highlightZh: '200+培训',
     images: [
-      '/images/image10.png',
-      '/images/image11.png',
-      '/images/image29.png',
-      '/images/image30.png',
+      '/images/image20.png',
+      '/images/image24.png',
+      '/images/image23.png',
+      '/images/image25.png',
     ],
   },
 ];
