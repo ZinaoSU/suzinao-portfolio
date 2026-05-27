@@ -14,7 +14,7 @@ interface Message {
   timestamp: Date;
 }
 
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = 'https://suzinao-portfolio-production.up.railway.app/api';
 
 export const ResumeAssistant: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const { t, i18n } = useTranslation();
