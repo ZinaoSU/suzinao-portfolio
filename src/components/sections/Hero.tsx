@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ChevronDown, Download, Sparkles } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { profile } from '../../data/profile';
+import { assetUrl } from '../../utils/assets';
 
 export const Hero: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -62,7 +63,7 @@ export const Hero: React.FC = () => {
             />
             <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-white/20 glow-purple">
               <img
-                src="/images/image5.jpeg"
+                src={assetUrl('/images/image5.jpeg')}
                 alt="Su Zinao"
                 className="w-full h-full object-cover"
               />

@@ -5,6 +5,7 @@ import { Heart, Compass, Dumbbell } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { profile } from '../../data/profile';
+import { assetUrl } from '../../utils/assets';
 
 export const About: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -43,7 +44,7 @@ export const About: React.FC = () => {
               <div className="flex items-center gap-6 mb-6">
                 <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-primary-purple/50 flex-shrink-0">
                   <img
-                    src="/images/image5.jpeg"
+                    src={assetUrl('/images/image5.jpeg')}
                     alt={isZh ? profile.nameZh : profile.name}
                     className="w-full h-full object-cover"
                   />

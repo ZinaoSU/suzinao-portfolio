@@ -1,3 +1,5 @@
+import { assetUrl } from '../utils/assets';
+
 export interface Project {
   id: string;
   name: string;
@@ -43,10 +45,10 @@ export const projectsData: Project[] = [
     metrics: '+284%',
     metricsZh: '+284%',
     images: [
-      '/images/image27.png',
-      '/images/image28.png',
-      '/images/image29.png',
-      '/images/image30.png',
+      assetUrl('/images/image27.png'),
+      assetUrl('/images/image28.png'),
+      assetUrl('/images/image29.png'),
+      assetUrl('/images/image30.png'),
     ],
   },
   {
@@ -74,10 +76,10 @@ export const projectsData: Project[] = [
     metrics: '+25% Accuracy',
     metricsZh: '+25%准确率',
     images: [
-      '/images/image21.png',
-      '/images/image21.png',
-      '/images/image21.png',
-      '/images/image21.png',
+      assetUrl('/images/image21.png'),
+      assetUrl('/images/image21.png'),
+      assetUrl('/images/image21.png'),
+      assetUrl('/images/image21.png'),
     ],
   },
   {
@@ -105,10 +107,10 @@ export const projectsData: Project[] = [
     metrics: 'A-Level',
     metricsZh: 'A级评价',
     images: [
-      '/images/image32.png',
-      '/images/image33.png',
-      '/images/image34.png',
-      '/images/image35.png',
+      assetUrl('/images/image32.png'),
+      assetUrl('/images/image33.png'),
+      assetUrl('/images/image34.png'),
+      assetUrl('/images/image35.png'),
     ],
   },
 ];

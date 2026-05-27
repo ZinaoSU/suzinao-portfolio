@@ -1,3 +1,5 @@
+import { assetUrl } from '../utils/assets';
+
 export interface Experience {
   id: string;
   company: string;
@@ -35,9 +37,9 @@ export const experienceData: Experience[] = [
     highlight: 'AI + Sports',
     highlightZh: 'AI + 运动',
     images: [
-      '/images/image3.png',
-      '/images/image2.png',
-      '/images/image1.png',
+      assetUrl('/images/image3.png'),
+      assetUrl('/images/image2.png'),
+      assetUrl('/images/image1.png'),
     ],
   },
   {
@@ -61,9 +63,9 @@ export const experienceData: Experience[] = [
     highlight: '1.3M Orders',
     highlightZh: '130万订单',
     images: [
-      '/images/image13.png',
-      '/images/image16.png',
-      '/images/image17.png',
+      assetUrl('/images/image13.png'),
+      assetUrl('/images/image16.png'),
+      assetUrl('/images/image17.png'),
     ],
   },
   {
@@ -87,10 +89,10 @@ export const experienceData: Experience[] = [
     highlight: '200+ Trained',
     highlightZh: '200+培训',
     images: [
-      '/images/image20.png',
-      '/images/image24.png',
-      '/images/image23.png',
-      '/images/image25.png',
+      assetUrl('/images/image20.png'),
+      assetUrl('/images/image24.png'),
+      assetUrl('/images/image23.png'),
+      assetUrl('/images/image25.png'),
     ],
   },
 ];
