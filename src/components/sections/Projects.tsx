@@ -49,6 +49,7 @@ export const Projects: React.FC = () => {
                       src={project.images[0]}
                       alt={isZh ? project.nameZh : project.name}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">

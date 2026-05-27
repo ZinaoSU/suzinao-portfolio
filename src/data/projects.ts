@@ -45,10 +45,10 @@ export const projectsData: Project[] = [
     metrics: '+284%',
     metricsZh: '+284%',
     images: [
-      assetUrl('/images/image27.png'),
-      assetUrl('/images/image28.png'),
-      assetUrl('/images/image29.png'),
-      assetUrl('/images/image30.png'),
+      assetUrl('/images/image27.webp'),
+      assetUrl('/images/image28.webp'),
+      assetUrl('/images/image29.webp'),
+      assetUrl('/images/image30.webp'),
     ],
   },
   {
@@ -76,10 +76,10 @@ export const projectsData: Project[] = [
     metrics: '+25% Accuracy',
     metricsZh: '+25%准确率',
     images: [
-      assetUrl('/images/image21.png'),
-      assetUrl('/images/image21.png'),
-      assetUrl('/images/image21.png'),
-      assetUrl('/images/image21.png'),
+      assetUrl('/images/image21.webp'),
+      assetUrl('/images/image21.webp'),
+      assetUrl('/images/image21.webp'),
+      assetUrl('/images/image21.webp'),
     ],
   },
   {
@@ -107,10 +107,10 @@ export const projectsData: Project[] = [
     metrics: 'A-Level',
     metricsZh: 'A级评价',
     images: [
-      assetUrl('/images/image32.png'),
-      assetUrl('/images/image33.png'),
-      assetUrl('/images/image34.png'),
-      assetUrl('/images/image35.png'),
+      assetUrl('/images/image32.webp'),
+      assetUrl('/images/image33.webp'),
+      assetUrl('/images/image34.webp'),
+      assetUrl('/images/image35.webp'),
     ],
   },
 ];

@@ -44,9 +44,10 @@ export const About: React.FC = () => {
               <div className="flex items-center gap-6 mb-6">
                 <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-primary-purple/50 flex-shrink-0">
                   <img
-                    src={assetUrl('/images/image5.jpeg')}
+                    src={assetUrl('/images/image5.webp')}
                     alt={isZh ? profile.nameZh : profile.name}
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                 </div>
                 <div>

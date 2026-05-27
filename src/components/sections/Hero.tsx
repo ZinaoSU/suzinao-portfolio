@@ -63,7 +63,7 @@ export const Hero: React.FC = () => {
             />
             <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-white/20 glow-purple">
               <img
-                src={assetUrl('/images/image5.jpeg')}
+                src={assetUrl('/images/image5.webp')}
                 alt="Su Zinao"
                 className="w-full h-full object-cover"
               />

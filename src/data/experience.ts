@@ -37,9 +37,9 @@ export const experienceData: Experience[] = [
     highlight: 'AI + Sports',
     highlightZh: 'AI + 运动',
     images: [
-      assetUrl('/images/image3.png'),
-      assetUrl('/images/image2.png'),
-      assetUrl('/images/image1.png'),
+      assetUrl('/images/image3.webp'),
+      assetUrl('/images/image2.webp'),
+      assetUrl('/images/image1.webp'),
     ],
   },
   {
@@ -63,9 +63,9 @@ export const experienceData: Experience[] = [
     highlight: '1.3M Orders',
     highlightZh: '130万订单',
     images: [
-      assetUrl('/images/image13.png'),
-      assetUrl('/images/image16.png'),
-      assetUrl('/images/image17.png'),
+      assetUrl('/images/image13.webp'),
+      assetUrl('/images/image16.webp'),
+      assetUrl('/images/image17.webp'),
     ],
   },
   {
@@ -89,10 +89,10 @@ export const experienceData: Experience[] = [
     highlight: '200+ Trained',
     highlightZh: '200+培训',
     images: [
-      assetUrl('/images/image20.png'),
-      assetUrl('/images/image24.png'),
-      assetUrl('/images/image23.png'),
-      assetUrl('/images/image25.png'),
+      assetUrl('/images/image20.webp'),
+      assetUrl('/images/image24.webp'),
+      assetUrl('/images/image23.webp'),
+      assetUrl('/images/image25.webp'),
     ],
   },
 ];

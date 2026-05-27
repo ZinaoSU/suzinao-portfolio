@@ -135,6 +135,7 @@ export const Carousel: React.FC<CarouselProps> = ({
                 src={img}
                 alt={`Thumbnail ${index + 1}`}
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
             </button>
           ))}
