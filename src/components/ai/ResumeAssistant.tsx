@@ -299,7 +299,7 @@ She focuses on AI + Product with experience at Nolibox, Tencent, etc. Ask me for
         setIsLoading(false);
       }
     },
-    [isLoading, messages, stopSpeaking, isZh]
+    [isLoading, messages, isZh]
   );
 
   const handleSubmit = async (e: React.FormEvent) => {

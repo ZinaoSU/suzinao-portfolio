@@ -6,6 +6,7 @@ export type AvatarState = 'idle' | 'listening' | 'speaking' | 'thinking';
 
 export interface DigitalHumanHandle {
   speak: (text: string) => void;
+  stop: () => void;
   setMuted: (muted: boolean) => void;
 }
 
@@ -74,6 +75,9 @@ export const DigitalHuman = forwardRef<DigitalHumanHandle, DigitalHumanProps>(
     useImperativeHandle(ref, () => ({
       speak: (text: string) => {
         avatarRef.current?.speak(text);
+      },
+      stop: () => {
+        avatarRef.current?.stop();
       },
       setMuted: (_muted: boolean) => {
         if (_muted) {
