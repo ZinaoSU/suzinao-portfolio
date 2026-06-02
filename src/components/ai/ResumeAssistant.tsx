@@ -138,22 +138,22 @@ You can type or click the mic to ask by voice!`,
       return isZh
         ? `苏梓铙有2个主要项目：
 
-1. **WakeUpTime多模态相册检索APP** (2023.09 - 2024.07)
-   - 基于CLIP+Spark的多模态图像检索
-   - 获校级创新奖
+1. **性能领域AI助手API开发（腾讯MINI项目）** (2023.07 - 2023.09)
+   - QLoRA+LLaMA2+LangChain训练框架，Streamlit可视化平台
+   - 技术方案获腾讯A级评价，应用于核心业务
 
-2. **腾讯AI助手API开发** (2023.07 - 2023.09)
-   - 基于QLoRA微调LLaMA2
-   - 获腾讯A级评价`
+2. **多模态相册检索APP「WakeUpTime」** (2023.09 - 2024.07)
+   - CLIP+Spark相册检索算法，支持文本/图像/语音搜索
+   - 搜索准确率提升25%，精准定位产品差异化`
         : `Su Zinao has 2 main projects:
 
-1. **WakeUpTime Multimodal Album Search** (2023.09 - 2024.07)
-   - CLIP + Spark based image retrieval
-   - Won school innovation award
+1. **Performance AI Assistant API (Tencent MINI)** (2023.07 - 2023.09)
+   - QLoRA+LLaMA2+LangChain framework, Streamlit visualization
+   - A-level evaluation, deployed in core business
 
-2. **Tencent AI Assistant API** (2023.07 - 2023.09)
-   - QLoRA fine-tuned LLaMA2
-   - Received Tencent A-level evaluation`;
+2. **WakeUpTime Multimodal Album Search** (2023.09 - 2024.07)
+   - CLIP+Spark retrieval, text/image/voice search
+   - +25% accuracy, precise product differentiation`;
     }
 
     if (msg.includes('ai') || msg.includes('llm') || msg.includes('人工智能') || msg.includes('gpt')) {
@@ -161,17 +161,17 @@ You can type or click the mic to ask by voice!`,
         ? `苏梓铙在 AI 方面有丰富的经验：
 
 • **北京计算美学科技**：负责AI文生图企业产品，推动月活提升120%
-• **腾讯**：QLoRA 微调 LLaMA2，获A级评价
-• **学术项目**：CLIP 多模态图像检索
+• **腾讯MINI项目**：QLoRA+LLaMA2+LangChain训练框架+Streamlit平台，获A级评价
+• **学术项目**：CLIP+Spark多模态相册检索，准确率提升25%
 
-她熟悉的技术包括：LLM, QLoRA, LLaMA2, CLIP, NLP, AIGC, Prompt Engineering`
+她熟悉的技术包括：LLM, QLoRA, LLaMA2, LangChain, CLIP, Spark, NLP, AIGC, Prompt Engineering`
         : `Su Zinao has extensive AI experience:
 
 • **Nolibox**: Led AI text-to-image enterprise product, 120% MAU growth
-• **Tencent**: QLoRA fine-tuned LLaMA2, A-level evaluation
-• **Academic**: CLIP multimodal image retrieval
+• **Tencent MINI**: QLoRA+LLaMA2+LangChain framework + Streamlit, A-level
+• **Academic**: CLIP+Spark multimodal retrieval, +25% accuracy
 
-Technologies: LLM, QLoRA, LLaMA2, CLIP, NLP, AIGC, Prompt Engineering`;
+Technologies: LLM, QLoRA, LLaMA2, LangChain, CLIP, Spark, NLP, AIGC, Prompt Engineering`;
     }
 
     if (msg.includes('contact') || msg.includes('联系') || msg.includes('email') || msg.includes('邮箱')) {
