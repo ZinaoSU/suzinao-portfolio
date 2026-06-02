@@ -291,17 +291,14 @@ const SceneContent: React.FC<{
   );
 };
 
-// ===== CORS TTS 代理（sglkc/tts-api） =====
-// GitHub: https://github.com/sglkc/tts-api
-// 公开端点: https://tts-api.netlify.app — CORS 友好，零 API Key
-// 底层使用 Google Translate TTS 引擎
+// ===== Vercel TTS 代理 =====
+// 通过项目自带的 /api/tts 代理 Google TTS，绕过 CORS + GFW
 
-const TTS_API_BASE = 'https://tts-api.netlify.app';
 const TTS_MAX_CHUNK = 180; // 每段最大字符数（留余量）
 
 function ttsUrl(text: string, lang: string): string {
-  const params = new URLSearchParams({ text, lang, speed: '1', pitch: '1' });
-  return `${TTS_API_BASE}/?${params.toString()}`;
+  const params = new URLSearchParams({ text, lang });
+  return `/api/tts?${params.toString()}`;
 }
 
 /** 按句子边界切分，确保每段不超过 maxLen */
