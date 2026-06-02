@@ -5,7 +5,7 @@ import { Send, Bot, User, Loader2, Mic, MicOff, Volume2, VolumeX } from 'lucide-
 import { Card } from '../ui/Card';
 import { profile } from '../../data/profile';
 import { DigitalHuman, AvatarState, DigitalHumanHandle } from './DigitalHuman';
-import { useSpeechRecognition, useSpeechSynthesis } from '../../hooks/useSpeech';
+import { useSpeechRecognition } from '../../hooks/useSpeech';
 
 interface Message {
   id: string;
@@ -64,14 +64,8 @@ You can type or click the mic to ask by voice!`,
     continuous: true,
   });
 
-  // 语音合成
-  const {
-    stopSpeaking,
-    isSupported: isTtsSupported,
-  } = useSpeechSynthesis({
-    lang: isZh ? 'zh-CN' : 'en-US',
-    rate: 1.1,
-  });
+  // 语音合成 (Edge TTS 已集成在 TalkingHeadAvatar 中)
+  const isTtsSupported = true;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -260,7 +254,7 @@ She focuses on AI + Product with experience at Nolibox, Tencent, etc. Ask me for
     async (text: string) => {
       if (!text || isLoading) return;
 
-      stopSpeaking();
+      duixDigitalHumanRef.current?.stop();
 
       const userMessage: Message = {
         id: Date.now().toString(),
@@ -360,7 +354,7 @@ She focuses on AI + Product with experience at Nolibox, Tencent, etc. Ask me for
                 whileTap={{ scale: 0.9 }}
                 onClick={() => {
                   setTtsEnabled(!ttsEnabled);
-                  if (ttsEnabled) stopSpeaking();
+                  if (ttsEnabled) duixDigitalHumanRef.current?.stop();
                 }}
                 className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
                   ttsEnabled
