@@ -128,6 +128,7 @@ export const Hero: React.FC = () => {
           <Button
             variant="outline"
             size="lg"
+            onClick={() => window.open(assetUrl('/苏梓铙27届-数据分析与人工智能硕士-产品经理.pdf'), '_blank')}
           >
             <Download size={20} className="mr-2" />
             {t('hero.downloadCV')}
