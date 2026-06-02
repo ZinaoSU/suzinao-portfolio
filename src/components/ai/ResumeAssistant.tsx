@@ -160,18 +160,18 @@ You can type or click the mic to ask by voice!`,
       return isZh
         ? `苏梓铙在 AI 方面有丰富的经验：
 
-• **字节跳动**：设计企业级 Prompt 优化平台
+• **北京计算美学科技**：负责AI文生图企业产品，推动月活提升120%
 • **腾讯**：QLoRA 微调 LLaMA2，获A级评价
 • **学术项目**：CLIP 多模态图像检索
 
-她熟悉的技术包括：LLM, QLoRA, LLaMA2, CLIP, NLP, Prompt Engineering`
+她熟悉的技术包括：LLM, QLoRA, LLaMA2, CLIP, NLP, AIGC, Prompt Engineering`
         : `Su Zinao has extensive AI experience:
 
-• **ByteDance**: Designed enterprise Prompt optimization platform
+• **Nolibox**: Led AI text-to-image enterprise product, 120% MAU growth
 • **Tencent**: QLoRA fine-tuned LLaMA2, A-level evaluation
 • **Academic**: CLIP multimodal image retrieval
 
-Technologies: LLM, QLoRA, LLaMA2, CLIP, NLP, Prompt Engineering`;
+Technologies: LLM, QLoRA, LLaMA2, CLIP, NLP, AIGC, Prompt Engineering`;
     }
 
     if (msg.includes('contact') || msg.includes('联系') || msg.includes('email') || msg.includes('邮箱')) {
@@ -218,8 +218,8 @@ Technologies: LLM, QLoRA, LLaMA2, CLIP, NLP, Prompt Engineering`;
 • **法大大** 产品经理 (2025.06 - 2025.09)
   RAG合规助手，达成130万订单
 
-• **字节跳动** 产品经理 (2024.08 - 2025.02)
-  Prompt优化平台，模板创作量+284%
+• **北京计算美学科技** 产品经理 (2024.05 - 2024.11)
+  Nolibox AI文生图产品，月活提升120%
 
 • **大疆创新** 产品运营 (2022.07 - 2022.08)
   Python+YOLO计算机视觉课程，培训200+人次`
@@ -231,8 +231,8 @@ Technologies: LLM, QLoRA, LLaMA2, CLIP, NLP, Prompt Engineering`;
 • **FADA** Product Manager (2025.06 - 2025.09)
   RAG compliance assistant, 1.3M orders
 
-• **ByteDance** Product Manager (2024.08 - 2025.02)
-  Prompt optimization platform, +284% templates
+• **Nolibox** Product Manager (2024.05 - 2024.11)
+  AI text-to-image product, 120% MAU growth
 
 • **DJI** Product Operations (2022.07 - 2022.08)
   Python+YOLO CV course, 200+ trained`;
@@ -245,14 +245,14 @@ Technologies: LLM, QLoRA, LLaMA2, CLIP, NLP, Prompt Engineering`;
 • 地点：${profile.location}
 • MBTI：${profile.mbti}
 
-她专注于 AI + 产品领域，有字节跳动、腾讯等公司经验。问我具体问题了解更多！`
+她专注于 AI + 产品领域，有北京计算美学科技、腾讯等公司经验。问我具体问题了解更多！`
       : `Based on my knowledge, ${profile.name}'s background:
 
 • Title: ${profile.titleZh}
 • Location: ${profile.location}
 • MBTI: ${profile.mbti}
 
-She focuses on AI + Product with experience at ByteDance, Tencent, etc. Ask me for more details!`;
+She focuses on AI + Product with experience at Nolibox, Tencent, etc. Ask me for more details!`;
   };
 
   // 通用发送处理
