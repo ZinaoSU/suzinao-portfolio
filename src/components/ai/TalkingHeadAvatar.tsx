@@ -291,20 +291,22 @@ const SceneContent: React.FC<{
   );
 };
 
-// ===== Google 翻译 TTS =====
-// 最简单方案：GET 请求返回 MP3，零依赖零 API Key
-// 限制：单次约 200 字符，长文本自动分句串行播放
+// ===== CORS TTS 代理（sglkc/tts-api） =====
+// GitHub: https://github.com/sglkc/tts-api
+// 公开端点: https://tts-api.netlify.app — CORS 友好，零 API Key
+// 底层使用 Google Translate TTS 引擎
 
+const TTS_API_BASE = 'https://tts-api.netlify.app';
 const TTS_MAX_CHUNK = 180; // 每段最大字符数（留余量）
 
 function ttsUrl(text: string, lang: string): string {
-  return `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${lang}&q=${encodeURIComponent(text)}`;
+  const params = new URLSearchParams({ text, lang, speed: '1', pitch: '1' });
+  return `${TTS_API_BASE}/?${params.toString()}`;
 }
 
 /** 按句子边界切分，确保每段不超过 maxLen */
 function splitText(text: string, maxLen: number): string[] {
   const chunks: string[] = [];
-  // 按中英文标点拆分句子
   const sentences = text.split(/(?<=[。！？.!?，,；;：:\n])/);
   let current = '';
   for (const s of sentences) {
@@ -319,17 +321,28 @@ function splitText(text: string, maxLen: number): string[] {
   return chunks.length > 0 ? chunks : [text];
 }
 
-/** 创建并播放单个 Audio（返回 Promise，播完 resolve） */
+/** fetch + Audio 播放单个片段（CORS 友好） */
 function playAudioChunk(url: string, timeoutMs: number): Promise<void> {
-  return new Promise((resolve) => {
-    const audio = new Audio(url);
-    let resolved = false;
-    const done = () => { if (!resolved) { resolved = true; resolve(); } };
-    audio.onended = done;
-    audio.onerror = () => { console.warn('[TTS] Chunk playback error'); done(); };
-    audio.play().catch(() => { done(); });
-    setTimeout(done, timeoutMs); // 超时兜底
-  });
+  return fetch(url)
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.blob();
+    })
+    .then(blob => {
+      return new Promise<void>((resolve) => {
+        const audioUrl = URL.createObjectURL(blob);
+        const audio = new Audio(audioUrl);
+        let resolved = false;
+        const done = () => {
+          if (!resolved) { resolved = true; URL.revokeObjectURL(audioUrl); resolve(); }
+        };
+        audio.onended = done;
+        audio.onerror = () => { console.warn('[TTS] Playback error'); done(); };
+        audio.play().catch(() => { done(); });
+        setTimeout(done, timeoutMs);
+      });
+    })
+    .catch(() => { /* 静默失败，继续下一段 */ });
 }
 
 // ===== 主组件 =====
