@@ -150,10 +150,58 @@ export function useSpeechRecognition(
   };
 }
 
-// ========== Speech Synthesis (TTS) ==========
+// ========== Speech Synthesis (TTS) via Edge TTS ==========
+
+const EDGE_TTS_URL =
+  'wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4';
+
+const VOICE_MAP: Record<string, string> = {
+  'zh-CN': 'zh-CN-XiaoxiaoNeural',
+  'en-US': 'en-US-JennyNeural',
+};
+
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+function escapeXml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+const HEADER_SEPARATOR = new TextEncoder().encode('\r\n\r\n');
+
+function parseBinaryMessage(buffer: ArrayBuffer): { headers: string; body: Uint8Array } | null {
+  const view = new Uint8Array(buffer);
+  let sepIdx = -1;
+  for (let i = 0; i <= view.length - 4; i++) {
+    if (
+      view[i] === HEADER_SEPARATOR[0] &&
+      view[i + 1] === HEADER_SEPARATOR[1] &&
+      view[i + 2] === HEADER_SEPARATOR[2] &&
+      view[i + 3] === HEADER_SEPARATOR[3]
+    ) {
+      sepIdx = i;
+      break;
+    }
+  }
+  if (sepIdx === -1) return null;
+  return {
+    headers: new TextDecoder().decode(view.slice(0, sepIdx)),
+    body: view.slice(sepIdx + 4),
+  };
+}
 
 interface UseSpeechSynthesisOptions {
-  lang?: string; // 'zh-CN' | 'en-US'
+  lang?: string;
   rate?: number;
   pitch?: number;
   voicePreference?: string;
@@ -171,101 +219,181 @@ interface UseSpeechSynthesisReturn {
 export function useSpeechSynthesis(
   options: UseSpeechSynthesisOptions = {}
 ): UseSpeechSynthesisReturn {
-  const { rate = 1.1, pitch = 1.0 } = options;
+  const { rate = 1.0, pitch = 1.0 } = options;
 
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isSupported, setIsSupported] = useState(false);
+  const [isSupported, setIsSupported] = useState(true);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const activeRef = useRef(false);
 
   useEffect(() => {
-    setIsSupported(
-      typeof window !== 'undefined' && 'speechSynthesis' in window
-    );
+    return () => {
+      activeRef.current = false;
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
   }, []);
 
-  // 获取最佳语音
-  const getBestVoice = useCallback(
-    (lang: string): SpeechSynthesisVoice | null => {
-      const voices = window.speechSynthesis.getVoices();
-      if (voices.length === 0) return null;
-
-      // 精确匹配
-      let voice = voices.find((v) => v.lang === lang);
-      // 前缀匹配
-      if (!voice) {
-        voice = voices.find((v) => v.lang.startsWith(lang.split('-')[0]));
-      }
-      // 默认中文语音
-      if (!voice && lang.startsWith('zh')) {
-        voice = voices.find(
-          (v) => v.lang.startsWith('zh') || v.name.includes('Ting-Ting') || v.name.includes('Yaoyao')
-        );
-      }
-      // 默认英文语音
-      if (!voice && lang.startsWith('en')) {
-        voice = voices.find(
-          (v) => v.lang.startsWith('en') && v.name.includes('Google')
-        ) || voices.find((v) => v.lang.startsWith('en'));
-      }
-
-      return voice || voices[0];
-    },
-    []
-  );
+  // 清理 markdown 文本
+  const cleanText = (text: string): string =>
+    text
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      .replace(/`(.*?)`/g, '$1')
+      .replace(/#{1,6}\s/g, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .replace(/•\s/g, '，')
+      .replace(/[-*]\s/g, '，')
+      .replace(/\.(?=[A-Z])/g, '. ');
 
   const speak = useCallback(
     (text: string, overrideLang?: string) => {
-      if (!isSupported) return;
-
-      // Stop any current speech
-      window.speechSynthesis.cancel();
-
-      // 清理文本（移除 markdown 格式符号）
-      const cleanText = text
-        .replace(/\*\*(.*?)\*\*/g, '$1')
-        .replace(/\*(.*?)\*/g, '$1')
-        .replace(/`(.*?)`/g, '$1')
-        .replace(/#{1,6}\s/g, '')
-        .replace(/\n{3,}/g, '\n\n')
-        .replace(/•\s/g, '，')
-        .replace(/[-*]\s/g, '，')
-        // 将英文句号后加空格以便TTS更好读
-        .replace(/\.(?=[A-Z])/g, '. ');
-
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.rate = rate;
-      utterance.pitch = pitch;
+      // 停止当前播放
+      stopSpeakingInternal();
 
       const targetLang = overrideLang || options.lang || 'zh-CN';
-      utterance.lang = targetLang;
+      const voiceName = VOICE_MAP[targetLang] || VOICE_MAP['zh-CN'];
+      const clean = cleanText(text);
 
-      const voice = getBestVoice(targetLang);
-      if (voice) {
-        utterance.voice = voice;
-      }
+      if (!clean.trim()) return;
 
-      utterance.onstart = () => setIsSpeaking(true);
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = (e) => {
-        console.error('Speech synthesis error:', e);
+      activeRef.current = true;
+      setIsSpeaking(true);
+
+      const ws = new WebSocket(EDGE_TTS_URL);
+      wsRef.current = ws;
+      const audioChunks: Uint8Array[] = [];
+
+      const timeout = setTimeout(() => {
+        if (ws.readyState === WebSocket.OPEN) ws.close();
         setIsSpeaking(false);
+      }, 30000);
+
+      ws.onopen = () => {
+        // 发送配置消息
+        const configMsg =
+          `X-Timestamp:${Date.now()}\r\n` +
+          `Content-Type:application/json; charset=utf-8\r\n` +
+          `Path:speech.config\r\n\r\n` +
+          `{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"false"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}`;
+        ws.send(configMsg);
       };
 
-      window.speechSynthesis.speak(utterance);
+      ws.onmessage = (event) => {
+        if (!activeRef.current) {
+          ws.close();
+          return;
+        }
+
+        if (typeof event.data === 'string') {
+          if (event.data.includes('turn.start')) {
+            // 发送 SSML
+            const ssml =
+              `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" ` +
+              `xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${targetLang}">` +
+              `<voice name="${voiceName}">` +
+              `<prosody rate="${rate.toFixed(1)}" pitch="${((pitch - 1) * 50).toFixed(0)}%">` +
+              `${escapeXml(clean)}` +
+              `</prosody></voice></speak>`;
+
+            const ssmlMsg =
+              `X-RequestId:${generateUUID()}\r\n` +
+              `Content-Type:application/ssml+xml\r\n` +
+              `Path:ssml\r\n\r\n${ssml}`;
+            ws.send(ssmlMsg);
+          }
+        } else if (event.data instanceof Blob) {
+          event.data.arrayBuffer().then((buf) => {
+            const parsed = parseBinaryMessage(buf);
+            if (parsed && parsed.headers.includes('Path:audio')) {
+              audioChunks.push(parsed.body);
+            }
+          });
+        } else if (event.data instanceof ArrayBuffer) {
+          const parsed = parseBinaryMessage(event.data);
+          if (parsed && parsed.headers.includes('Path:audio')) {
+            audioChunks.push(parsed.body);
+          }
+        }
+      };
+
+      ws.onclose = () => {
+        clearTimeout(timeout);
+        wsRef.current = null;
+        if (!activeRef.current) return;
+
+        if (audioChunks.length > 0) {
+          const totalLen = audioChunks.reduce((sum, c) => sum + c.length, 0);
+          const merged = new Uint8Array(totalLen);
+          let offset = 0;
+          for (const chunk of audioChunks) {
+            merged.set(chunk, offset);
+            offset += chunk.length;
+          }
+          const blob = new Blob([merged], { type: 'audio/mp3' });
+          const url = URL.createObjectURL(blob);
+
+          const audio = new Audio(url);
+          audioRef.current = audio;
+          audio.onended = () => {
+            URL.revokeObjectURL(url);
+            audioRef.current = null;
+            setIsSpeaking(false);
+          };
+          audio.onerror = () => {
+            URL.revokeObjectURL(url);
+            audioRef.current = null;
+            setIsSpeaking(false);
+          };
+          audio.play().catch(() => setIsSpeaking(false));
+        } else {
+          setIsSpeaking(false);
+        }
+      };
+
+      ws.onerror = () => {
+        clearTimeout(timeout);
+        wsRef.current = null;
+        setIsSpeaking(false);
+      };
     },
-    [isSupported, rate, pitch, options.lang, getBestVoice]
+    [rate, pitch, options.lang]
   );
 
-  const stopSpeaking = useCallback(() => {
-    window.speechSynthesis.cancel();
-    setIsSpeaking(false);
+  const stopSpeakingInternal = useCallback(() => {
+    activeRef.current = false;
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
   }, []);
 
+  const stopSpeaking = useCallback(() => {
+    stopSpeakingInternal();
+    setIsSpeaking(false);
+  }, [stopSpeakingInternal]);
+
   const pauseSpeaking = useCallback(() => {
-    window.speechSynthesis.pause();
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
   }, []);
 
   const resumeSpeaking = useCallback(() => {
-    window.speechSynthesis.resume();
+    if (audioRef.current) {
+      audioRef.current.play().catch(() => {});
+    }
   }, []);
 
   return {
