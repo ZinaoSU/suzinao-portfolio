@@ -9,26 +9,22 @@ import { Projects } from './components/sections/Projects';
 import { AILab } from './components/sections/AILab';
 import { Skills } from './components/sections/Skills';
 import { Contact } from './components/sections/Contact';
-import { AuthProvider } from './hooks/useAuth';
-
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <div className="min-h-screen bg-dark-bg">
-        <Navbar />
-        <main>
-          <Hero />
-          <About />
-          <Education />
-          <ExperienceSection />
-          <Projects />
-          <AILab />
-          <Skills />
-          <Contact />
-        </main>
-        <Footer />
-      </div>
-    </AuthProvider>
+    <div className="min-h-screen bg-dark-bg">
+      <Navbar />
+      <main>
+        <Hero />
+        <About />
+        <Education />
+        <ExperienceSection />
+        <Projects />
+        <AILab />
+        <Skills />
+        <Contact />
+      </main>
+      <Footer />
+    </div>
   );
 };
 

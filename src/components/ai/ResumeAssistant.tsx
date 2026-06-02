@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Bot, User, Loader2, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { profile } from '../../data/profile';
-import { DigitalHuman, AvatarState } from './DigitalHuman';
+import { DigitalHuman, AvatarState, DigitalHumanHandle } from './DigitalHuman';
 import { useSpeechRecognition, useSpeechSynthesis } from '../../hooks/useSpeech';
 
 interface Message {
@@ -46,7 +46,9 @@ You can type or click the mic to ask by voice!`,
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const duixDigitalHumanRef = useRef<DigitalHumanHandle>(null);
 
   // 语音识别
   const {
@@ -64,9 +66,7 @@ You can type or click the mic to ask by voice!`,
 
   // 语音合成
   const {
-    speak,
     stopSpeaking,
-    isSpeaking,
     isSupported: isTtsSupported,
   } = useSpeechSynthesis({
     lang: isZh ? 'zh-CN' : 'en-US',
@@ -294,17 +294,20 @@ He focuses on AI + Product with experience at ByteDance, Tencent, etc. Ask me fo
 
         setMessages((prev) => [...prev, assistantMessage]);
 
-        // TTS 播报
-        if (ttsEnabled && isTtsSupported) {
-          speak(response, isZh ? 'zh-CN' : 'en-US');
-        }
+        // 用数字人说话（内部使用浏览器 TTS）
+        setIsSpeaking(true);
+        duixDigitalHumanRef.current?.speak(response);
+
+        // 估算说话时长，结束后恢复状态
+        const estimatedDuration = Math.max(3000, response.length * 50);
+        setTimeout(() => setIsSpeaking(false), estimatedDuration);
       } catch (error) {
         console.error('Error:', error);
       } finally {
         setIsLoading(false);
       }
     },
-    [isLoading, messages, stopSpeaking, ttsEnabled, isTtsSupported, speak, isZh]
+    [isLoading, messages, stopSpeaking, isZh]
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -378,7 +381,7 @@ He focuses on AI + Product with experience at ByteDance, Tencent, etc. Ask me fo
         <div className="flex-1 flex overflow-hidden">
           {/* 左侧：数字人动画 */}
           <div className="w-[200px] flex-shrink-0 flex flex-col items-center justify-center bg-gradient-to-b from-dark-card/50 to-dark-bg/50 border-r border-white/5 p-4">
-            <DigitalHuman state={getAvatarState()} size={130} />
+            <DigitalHuman ref={duixDigitalHumanRef} state={getAvatarState()} size={130} />
 
             {/* 状态文字 */}
             <motion.div
