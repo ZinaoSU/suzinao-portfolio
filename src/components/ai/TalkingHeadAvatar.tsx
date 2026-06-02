@@ -291,215 +291,141 @@ const SceneContent: React.FC<{
   );
 };
 
-// ===== Edge TTS WebSocket 工具函数 =====
-const EDGE_TTS_URL =
-  'wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4';
+// ===== 浏览器 TTS：优先选择高质量中文女声 =====
 
-const VOICE_MAP: Record<string, string> = {
-  'zh-CN': 'zh-CN-XiaoxiaoNeural',
-  'en-US': 'en-US-JennyNeural',
-};
+// 中文女声优先级列表（从高到低）
+const ZH_VOICE_PRIORITY = [
+  'zh-CN-XiaoxiaoNeural',   // 微软晓晓（Edge/Windows 11）
+  'zh-CN-XiaoyiNeural',     // 微软晓依
+  'zh-CN-YunxiNeural',      // 微软云希
+  'zh-CN-YunjianNeural',    // 微软云健
+  'zh-CN-YunyangNeural',    // 微软云扬
+  'zh-CN-YunxiaNeural',     // 微软云夏
+  'zh-CN-XiaochenNeural',   // 微软晓辰
+  'zh-CN-liaoning-XiaobeiNeural', // 微软晓北（东北话）
+  'zh-TW-HsiaoChenNeural',  // 台湾女声
+  'zh-HK-HiuGaaiNeural',    // 香港女声
+  'zh-CN',                  // 任意中文
+];
 
-function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
+const EN_VOICE_PRIORITY = [
+  'en-US-JennyNeural',      // 微软 Jenny
+  'en-US-AriaNeural',       // 微软 Aria
+  'en-US-AvaNeural',        // 微软 Ava
+  'en-US-MichelleNeural',   // 微软 Michelle
+  'en-US',                  // 任意英文
+];
 
-function escapeXml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
-
-const HEADER_SEP = new TextEncoder().encode('\r\n\r\n');
-
-function parseBinaryMessage(buffer: ArrayBuffer): { headers: string; body: Uint8Array } | null {
-  const view = new Uint8Array(buffer);
-  let sepIdx = -1;
-  for (let i = 0; i <= view.length - 4; i++) {
-    if (view[i] === HEADER_SEP[0] && view[i+1] === HEADER_SEP[1] &&
-        view[i+2] === HEADER_SEP[2] && view[i+3] === HEADER_SEP[3]) {
-      sepIdx = i;
-      break;
+function findBestVoice(voices: SpeechSynthesisVoice[], priorities: string[]): SpeechSynthesisVoice | undefined {
+  for (const name of priorities) {
+    const found = voices.find(v => v.name === name);
+    if (found) return found;
+  }
+  // fallback: 按 lang 匹配
+  for (const name of priorities) {
+    if (name.includes('-')) {
+      const lang = name.split('-').slice(0, 2).join('-');
+      const found = voices.find(v => v.lang.startsWith(lang));
+      if (found) return found;
     }
   }
-  if (sepIdx === -1) return null;
-  return {
-    headers: new TextDecoder().decode(view.slice(0, sepIdx)),
-    body: view.slice(sepIdx + 4),
-  };
-}
-
-function speakEdgeTTS(
-  text: string,
-  lang: string,
-  rate: number,
-  onStart: () => void,
-  onEnd: () => void,
-  onError: () => void,
-): () => void {
-  let active = true;
-  let ws: WebSocket | null = null;
-  let audio: HTMLAudioElement | null = null;
-  const audioChunks: Uint8Array[] = [];
-
-  const voice = VOICE_MAP[lang] || VOICE_MAP['zh-CN'];
-  const clean = text
-    .replace(/[*_~`#]/g, '')
-    .replace(/\[.*?\]\(.*?\)/g, '')
-    .replace(/\n{2,}/g, '。')
-    .replace(/\n/g, '，');
-
-  if (!clean.trim()) return () => {};
-
-  try {
-    ws = new WebSocket(EDGE_TTS_URL);
-  } catch {
-    onError();
-    return () => {};
-  }
-
-  const timeout = setTimeout(() => {
-    active = false;
-    ws?.close();
-  }, 30000);
-
-  ws.onopen = () => {
-    const configMsg =
-      `X-Timestamp:${Date.now()}\r\n` +
-      `Content-Type:application/json; charset=utf-8\r\n` +
-      `Path:speech.config\r\n\r\n` +
-      `{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"false"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}`;
-    ws!.send(configMsg);
-  };
-
-  ws.onmessage = (event) => {
-    if (!active) { ws?.close(); return; }
-
-    if (typeof event.data === 'string') {
-      if (event.data.includes('turn.start')) {
-        const ssml =
-          `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" ` +
-          `xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${lang}">` +
-          `<voice name="${voice}">` +
-          `<prosody rate="${rate.toFixed(1)}" pitch="+0%">` +
-          `${escapeXml(clean)}` +
-          `</prosody></voice></speak>`;
-
-        const ssmlMsg =
-          `X-RequestId:${generateUUID()}\r\n` +
-          `Content-Type:application/ssml+xml\r\n` +
-          `Path:ssml\r\n\r\n${ssml}`;
-        ws!.send(ssmlMsg);
-      }
-      return;
-    }
-
-    let buf: ArrayBuffer | null = null;
-    if (event.data instanceof Blob) {
-      event.data.arrayBuffer().then(b => processBuffer(b));
-      return;
-    } else if (event.data instanceof ArrayBuffer) {
-      buf = event.data;
-    }
-
-    if (buf) processBuffer(buf);
-  };
-
-  function processBuffer(buf: ArrayBuffer) {
-    const parsed = parseBinaryMessage(buf);
-    if (parsed && parsed.headers.includes('Path:audio')) {
-      audioChunks.push(parsed.body);
-    }
-  }
-
-  ws.onclose = () => {
-    clearTimeout(timeout);
-    if (!active) return;
-
-    if (audioChunks.length > 0) {
-      const totalLen = audioChunks.reduce((s, c) => s + c.length, 0);
-      const merged = new Uint8Array(totalLen);
-      let offset = 0;
-      for (const chunk of audioChunks) { merged.set(chunk, offset); offset += chunk.length; }
-      const blob = new Blob([merged], { type: 'audio/mp3' });
-      const url = URL.createObjectURL(blob);
-      audio = new Audio(url);
-      audio.onplay = onStart;
-      audio.onended = () => { URL.revokeObjectURL(url); active = false; onEnd(); };
-      audio.onerror = () => { URL.revokeObjectURL(url); active = false; onEnd(); };
-      audio.play().catch(() => { active = false; onEnd(); });
-    } else {
-      onEnd();
-    }
-  };
-
-  ws.onerror = () => {
-    clearTimeout(timeout);
-    if (active) { active = false; onError(); }
-  };
-
-  return () => {
-    active = false;
-    ws?.close();
-    if (audio) { audio.pause(); audio = null; }
-  };
+  return undefined;
 }
 
 // ===== 主组件 =====
 export const TalkingHeadAvatar = forwardRef<TalkingHeadHandle, TalkingHeadAvatarProps>(
   ({ speaking, listening, thinking, size = 300, onSpeakStart, onSpeakEnd }, ref) => {
     const [localSpeaking, setLocalSpeaking] = useState(false);
-    const cancelRef = useRef<(() => void) | null>(null);
+    const synthRef = useRef<SpeechSynthesis | null>(null);
+    const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+    const voicesLoadedRef = useRef(false);
 
     const isActiveSpeaking = speaking || localSpeaking;
 
     const stop = () => {
-      if (cancelRef.current) {
-        cancelRef.current();
-        cancelRef.current = null;
+      if (synthRef.current) {
+        synthRef.current.cancel();
       }
       setLocalSpeaking(false);
     };
 
     const speak = (text: string) => {
-      stop();
+      if (typeof window === 'undefined' || !window.speechSynthesis) return;
 
-      const hasChinese = /[\u4e00-\u9fff]/.test(text);
-      const lang = hasChinese ? 'zh-CN' : 'en-US';
+      const synth = window.speechSynthesis;
+      synthRef.current = synth;
+      synth.cancel(); // 先取消当前播放
 
-      cancelRef.current = speakEdgeTTS(
-        text,
-        lang,
-        1.05,
-        () => {
-          setLocalSpeaking(true);
-          onSpeakStart?.();
-        },
-        () => {
-          setLocalSpeaking(false);
-          onSpeakEnd?.();
-          cancelRef.current = null;
-        },
-        () => {
-          setLocalSpeaking(false);
-          onSpeakEnd?.();
-          cancelRef.current = null;
+      // 清洗文本
+      const cleanText = text
+        .replace(/[*_~`#]/g, '')
+        .replace(/\[.*?\]\(.*?\)/g, '')
+        .replace(/\n{2,}/g, '。')
+        .replace(/\n/g, '，');
+
+      if (!cleanText.trim()) return;
+
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utteranceRef.current = utterance;
+
+      const hasChinese = /[\u4e00-\u9fff]/.test(cleanText);
+      utterance.lang = hasChinese ? 'zh-CN' : 'en-US';
+      utterance.rate = 1.1;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+
+      // 智能选语音
+      const voices = synth.getVoices();
+      if (voices.length > 0) {
+        const bestVoice = hasChinese
+          ? findBestVoice(voices, ZH_VOICE_PRIORITY)
+          : findBestVoice(voices, EN_VOICE_PRIORITY);
+        if (bestVoice) {
+          utterance.voice = bestVoice;
+          console.log('[TTS] Using voice:', bestVoice.name, bestVoice.lang);
         }
-      );
+      }
+
+      utterance.onstart = () => {
+        setLocalSpeaking(true);
+        onSpeakStart?.();
+      };
+      utterance.onend = () => {
+        setLocalSpeaking(false);
+        onSpeakEnd?.();
+      };
+      utterance.onerror = (e) => {
+        // 忽略用户主动取消导致的错误
+        if (e.error !== 'canceled' && e.error !== 'interrupted') {
+          console.warn('[TTS] Utterance error:', e.error);
+        }
+        setLocalSpeaking(false);
+        onSpeakEnd?.();
+      };
+
+      synth.speak(utterance);
     };
 
     useImperativeHandle(ref, () => ({ speak, stop }));
 
+    // 预加载语音列表（浏览器异步加载）
     useEffect(() => {
+      if (typeof window === 'undefined' || !window.speechSynthesis) return;
+      const synth = window.speechSynthesis;
+
+      const loadVoices = () => {
+        const voices = synth.getVoices();
+        if (voices.length > 0) {
+          voicesLoadedRef.current = true;
+          console.log('[TTS] Voices loaded:', voices.length);
+        }
+      };
+
+      loadVoices();
+      synth.onvoiceschanged = loadVoices;
+
       return () => {
-        if (cancelRef.current) cancelRef.current();
+        synth.cancel();
       };
     }, []);
 
