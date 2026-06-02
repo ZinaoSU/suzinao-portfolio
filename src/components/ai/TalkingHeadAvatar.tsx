@@ -291,70 +291,66 @@ const SceneContent: React.FC<{
   );
 };
 
-// ===== 浏览器 TTS：优先选择高质量中文女声 =====
+// ===== Google 翻译 TTS =====
+// 最简单方案：GET 请求返回 MP3，零依赖零 API Key
+// 限制：单次约 200 字符，长文本自动分句串行播放
 
-// 中文女声优先级列表（从高到低）
-const ZH_VOICE_PRIORITY = [
-  'zh-CN-XiaoxiaoNeural',   // 微软晓晓（Edge/Windows 11）
-  'zh-CN-XiaoyiNeural',     // 微软晓依
-  'zh-CN-YunxiNeural',      // 微软云希
-  'zh-CN-YunjianNeural',    // 微软云健
-  'zh-CN-YunyangNeural',    // 微软云扬
-  'zh-CN-YunxiaNeural',     // 微软云夏
-  'zh-CN-XiaochenNeural',   // 微软晓辰
-  'zh-CN-liaoning-XiaobeiNeural', // 微软晓北（东北话）
-  'zh-TW-HsiaoChenNeural',  // 台湾女声
-  'zh-HK-HiuGaaiNeural',    // 香港女声
-  'zh-CN',                  // 任意中文
-];
+const TTS_MAX_CHUNK = 180; // 每段最大字符数（留余量）
 
-const EN_VOICE_PRIORITY = [
-  'en-US-JennyNeural',      // 微软 Jenny
-  'en-US-AriaNeural',       // 微软 Aria
-  'en-US-AvaNeural',        // 微软 Ava
-  'en-US-MichelleNeural',   // 微软 Michelle
-  'en-US',                  // 任意英文
-];
+function ttsUrl(text: string, lang: string): string {
+  return `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${lang}&q=${encodeURIComponent(text)}`;
+}
 
-function findBestVoice(voices: SpeechSynthesisVoice[], priorities: string[]): SpeechSynthesisVoice | undefined {
-  for (const name of priorities) {
-    const found = voices.find(v => v.name === name);
-    if (found) return found;
-  }
-  // fallback: 按 lang 匹配
-  for (const name of priorities) {
-    if (name.includes('-')) {
-      const lang = name.split('-').slice(0, 2).join('-');
-      const found = voices.find(v => v.lang.startsWith(lang));
-      if (found) return found;
+/** 按句子边界切分，确保每段不超过 maxLen */
+function splitText(text: string, maxLen: number): string[] {
+  const chunks: string[] = [];
+  // 按中英文标点拆分句子
+  const sentences = text.split(/(?<=[。！？.!?，,；;：:\n])/);
+  let current = '';
+  for (const s of sentences) {
+    if (current.length + s.length > maxLen && current.length > 0) {
+      chunks.push(current.trim());
+      current = s;
+    } else {
+      current += s;
     }
   }
-  return undefined;
+  if (current.trim()) chunks.push(current.trim());
+  return chunks.length > 0 ? chunks : [text];
+}
+
+/** 创建并播放单个 Audio（返回 Promise，播完 resolve） */
+function playAudioChunk(url: string, timeoutMs: number): Promise<void> {
+  return new Promise((resolve) => {
+    const audio = new Audio(url);
+    let resolved = false;
+    const done = () => { if (!resolved) { resolved = true; resolve(); } };
+    audio.onended = done;
+    audio.onerror = () => { console.warn('[TTS] Chunk playback error'); done(); };
+    audio.play().catch(() => { done(); });
+    setTimeout(done, timeoutMs); // 超时兜底
+  });
 }
 
 // ===== 主组件 =====
 export const TalkingHeadAvatar = forwardRef<TalkingHeadHandle, TalkingHeadAvatarProps>(
   ({ speaking, listening, thinking, size = 300, onSpeakStart, onSpeakEnd }, ref) => {
     const [localSpeaking, setLocalSpeaking] = useState(false);
-    const synthRef = useRef<SpeechSynthesis | null>(null);
-    const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-    const voicesLoadedRef = useRef(false);
+    const cancelRef = useRef(false);
 
     const isActiveSpeaking = speaking || localSpeaking;
 
     const stop = () => {
-      if (synthRef.current) {
-        synthRef.current.cancel();
-      }
+      cancelRef.current = true;
       setLocalSpeaking(false);
     };
 
     const speak = (text: string) => {
-      if (typeof window === 'undefined' || !window.speechSynthesis) return;
-
-      const synth = window.speechSynthesis;
-      synthRef.current = synth;
-      synth.cancel(); // 先取消当前播放
+      // 取消之前的播放
+      cancelRef.current = true;
+      // 重置取消标记
+      cancelRef.current = false;
+      const thisCancel = cancelRef;
 
       // 清洗文本
       const cleanText = text
@@ -365,69 +361,36 @@ export const TalkingHeadAvatar = forwardRef<TalkingHeadHandle, TalkingHeadAvatar
 
       if (!cleanText.trim()) return;
 
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utteranceRef.current = utterance;
-
       const hasChinese = /[\u4e00-\u9fff]/.test(cleanText);
-      utterance.lang = hasChinese ? 'zh-CN' : 'en-US';
-      utterance.rate = 1.1;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
+      const lang = hasChinese ? 'zh-CN' : 'en';
 
-      // 智能选语音
-      const voices = synth.getVoices();
-      if (voices.length > 0) {
-        const bestVoice = hasChinese
-          ? findBestVoice(voices, ZH_VOICE_PRIORITY)
-          : findBestVoice(voices, EN_VOICE_PRIORITY);
-        if (bestVoice) {
-          utterance.voice = bestVoice;
-          console.log('[TTS] Using voice:', bestVoice.name, bestVoice.lang);
-        }
-      }
+      // 分句
+      const chunks = splitText(cleanText, TTS_MAX_CHUNK);
 
-      utterance.onstart = () => {
+      // 串行播放
+      const playAll = async () => {
         setLocalSpeaking(true);
         onSpeakStart?.();
-      };
-      utterance.onend = () => {
-        setLocalSpeaking(false);
-        onSpeakEnd?.();
-      };
-      utterance.onerror = (e) => {
-        // 忽略用户主动取消导致的错误
-        if (e.error !== 'canceled' && e.error !== 'interrupted') {
-          console.warn('[TTS] Utterance error:', e.error);
+        for (let i = 0; i < chunks.length; i++) {
+          if (thisCancel.current) break;
+          const url = ttsUrl(chunks[i], lang);
+          // 估算每段播放时长（中文约 4 字/秒）
+          const estMs = Math.max(2000, chunks[i].length * 250);
+          await playAudioChunk(url, estMs);
         }
-        setLocalSpeaking(false);
-        onSpeakEnd?.();
+        if (!thisCancel.current) {
+          setLocalSpeaking(false);
+          onSpeakEnd?.();
+        }
       };
 
-      synth.speak(utterance);
+      playAll().catch(() => {
+        setLocalSpeaking(false);
+        onSpeakEnd?.();
+      });
     };
 
     useImperativeHandle(ref, () => ({ speak, stop }));
-
-    // 预加载语音列表（浏览器异步加载）
-    useEffect(() => {
-      if (typeof window === 'undefined' || !window.speechSynthesis) return;
-      const synth = window.speechSynthesis;
-
-      const loadVoices = () => {
-        const voices = synth.getVoices();
-        if (voices.length > 0) {
-          voicesLoadedRef.current = true;
-          console.log('[TTS] Voices loaded:', voices.length);
-        }
-      };
-
-      loadVoices();
-      synth.onvoiceschanged = loadVoices;
-
-      return () => {
-        synth.cancel();
-      };
-    }, []);
 
     return (
       <div style={{ width: size, height: size, position: 'relative', cursor: 'default' }}>
