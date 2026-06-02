@@ -212,30 +212,30 @@ Technologies: LLM, QLoRA, LLaMA2, CLIP, NLP, AIGC, Prompt Engineering`;
       return isZh
         ? `苏梓铙的工作经历：
 
-• **香港智能制造中心** 产品经理 (2025.12 - 2026.03)
+• **香港智能制造中心** 产品经理实习生 (2025.12 - 2026.03)
   AI+攀岩运动硬件产品开发
 
-• **法大大** 产品经理 (2025.06 - 2025.09)
-  RAG合规助手，达成130万订单
+• **法大大** 产品经理实习生 (2025.06 - 2025.09)
+  RAG合规知识库+AI客服机器人，80%自动化响应
 
-• **北京计算美学科技** 产品经理 (2024.05 - 2024.11)
+• **北京计算美学科技** 产品经理实习生 (2024.05 - 2024.11)
   Nolibox AI文生图产品，月活提升120%
 
-• **大疆创新** 产品运营 (2022.07 - 2022.08)
-  Python+YOLO计算机视觉课程，培训200+人次`
+• **大疆创新** 产品运营实习生 (2022.07 - 2022.08)
+  Python+YOLO课程，98%满意度，报名率+20%`
         : `Su Zinao's work experience:
 
-• **CIMS HK** Product Manager (2025.12 - 2026.03)
+• **CIMS HK** Product Manager Intern (2025.12 - 2026.03)
   AI + Climbing sports hardware product
 
-• **FADA** Product Manager (2025.06 - 2025.09)
-  RAG compliance assistant, 1.3M orders
+• **FADA** Product Manager Intern (2025.06 - 2025.09)
+  RAG knowledge base + AI chatbot, 80% auto response
 
-• **Nolibox** Product Manager (2024.05 - 2024.11)
+• **Nolibox** Product Manager Intern (2024.05 - 2024.11)
   AI text-to-image product, 120% MAU growth
 
-• **DJI** Product Operations (2022.07 - 2022.08)
-  Python+YOLO CV course, 200+ trained`;
+• **DJI** Product Operations Intern (2022.07 - 2022.08)
+  Python+YOLO course, 98% satisfaction, +20% enrollment`;
     }
 
     return isZh
