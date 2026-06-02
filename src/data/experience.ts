@@ -94,7 +94,6 @@ export const experienceData: Experience[] = [
       assetUrl('/images/image27.webp'),
       assetUrl('/images/image28.webp'),
       assetUrl('/images/image29.webp'),
-      assetUrl('/images/image30.webp'),
     ],
   },
   {

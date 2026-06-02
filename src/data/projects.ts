@@ -78,7 +78,7 @@ export const projectsData: Project[] = [
     images: [
       assetUrl('/images/image32.webp'),
       assetUrl('/images/image33.webp'),
-      assetUrl('/images/image34.webp'),
+      assetUrl('/images/image34.jpg'),
       assetUrl('/images/image35.webp'),
     ],
   },
