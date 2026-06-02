@@ -64,7 +64,7 @@ const VroidPortrait: React.FC<{
     const skeletons: THREE.Skeleton[] = [];
 
     scene.traverse((child) => {
-      if (child instanceof THREE.Mesh && child.morphTargetInfluences?.length >= 100) {
+      if (child instanceof THREE.Mesh && (child.morphTargetInfluences?.length ?? 0) >= 100) {
         meshes.push(child);
       }
       if (child instanceof THREE.Bone && ARM_TARGET_QUATS[child.name]) {

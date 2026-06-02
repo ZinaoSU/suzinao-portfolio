@@ -272,10 +272,10 @@ const HeadMesh: React.FC<{ state: AvatarState }> = ({ state }) => {
 
       {/* Ears */}
       <mesh material={skinMaterial} position={[-0.48, 0.35, 0.02]} rotation={[0, 0, -0.2]}>
-        <sphereGeometry args={[0.08, 12, 12]} scale={[0.4, 0.85, 0.3]} />
+        <sphereGeometry args={[0.08, 12, 12] as any} scale={[0.4, 0.85, 0.3]} />
       </mesh>
       <mesh material={skinMaterial} position={[0.48, 0.35, 0.02]} rotation={[0, 0, 0.2]}>
-        <sphereGeometry args={[0.08, 12, 12]} scale={[0.4, 0.85, 0.3]} />
+        <sphereGeometry args={[0.08, 12, 12] as any} scale={[0.4, 0.85, 0.3]} />
       </mesh>
     </group>
   );
