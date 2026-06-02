@@ -106,7 +106,12 @@ export const AILab: React.FC = () => {
               viewport={{ once: true }}
               transition={{ delay: index * 0.15 }}
               whileHover={{ y: -8 }}
-              onClick={() => setActiveTool(tool.id)}
+              onClick={() => {
+                setActiveTool(tool.id);
+                requestAnimationFrame(() => {
+                  document.getElementById('ailab')?.scrollIntoView({ behavior: 'instant', block: 'start' });
+                });
+              }}
               className="cursor-pointer"
             >
               <Card
