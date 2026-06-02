@@ -73,7 +73,7 @@ export const Carousel: React.FC<CarouselProps> = ({
               x: { type: 'spring', stiffness: 300, damping: 30 },
               opacity: { duration: 0.2 },
             }}
-            className="absolute inset-0 w-full h-full object-cover cursor-pointer"
+            className="absolute inset-0 w-full h-full object-contain cursor-pointer"
             onClick={() => onImageClick?.(currentIndex)}
           />
         </AnimatePresence>

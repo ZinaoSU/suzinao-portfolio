@@ -49,7 +49,7 @@ export const ExperienceSection: React.FC = () => {
                     <img
                       src={exp.images[0]}
                       alt={isZh ? exp.companyZh : exp.company}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                       loading="lazy"
                     />
                   ) : (

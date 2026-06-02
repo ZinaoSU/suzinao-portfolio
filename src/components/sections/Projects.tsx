@@ -48,7 +48,7 @@ export const Projects: React.FC = () => {
                     <img
                       src={project.images[0]}
                       alt={isZh ? project.nameZh : project.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                       loading="lazy"
                     />
                   ) : (
