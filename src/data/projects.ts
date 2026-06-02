@@ -21,37 +21,6 @@ export interface Project {
 
 export const projectsData: Project[] = [
   {
-    id: 'bytedance-prompt',
-    name: 'ByteDance Prompt Optimization Platform',
-    nameZh: '字节跳动-Prompt优化平台',
-    company: 'ByteDance',
-    role: 'Product Manager',
-    roleZh: '产品经理',
-    period: '2024.08 - 2025.02',
-    description: 'Designed and launched an internal prompt optimization platform for enterprise LLMs, improving template creation efficiency.',
-    descriptionZh: '设计并上线企业级LLM内部Prompt优化平台，提升模板创作效率。',
-    tech: ['LLM', 'Prompt Engineering', 'Template System'],
-    techZh: ['LLM', 'Prompt工程', '模板系统'],
-    highlights: [
-      'Template creation increased by 284%',
-      'Reduced prompt debugging time by 60%',
-      'Served 500+ internal users',
-    ],
-    highlightsZh: [
-      '模板创作量提升284%',
-      'Prompt调试时间减少60%',
-      '服务500+内部用户',
-    ],
-    metrics: '+284%',
-    metricsZh: '+284%',
-    images: [
-      assetUrl('/images/image27.webp'),
-      assetUrl('/images/image28.webp'),
-      assetUrl('/images/image29.webp'),
-      assetUrl('/images/image30.webp'),
-    ],
-  },
-  {
     id: 'wakeuptime',
     name: 'WakeUpTime Multimodal Album Search',
     nameZh: 'WakeUpTime多模态相册检索APP',

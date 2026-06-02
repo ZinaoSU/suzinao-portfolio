@@ -26,18 +26,18 @@ export const ResumeAssistant: React.FC<{ onBack: () => void }> = ({ onBack }) =>
       content: isZh
         ? `你好！我是简历对话助手。你可以问我关于 ${profile.nameZh} 的任何问题，比如：
 
-• 他有什么项目经验？
-• 他用过哪些 AI 技术？
-• 他的职业背景是什么？
-• 怎么联系他？
+• 她有什么项目经验？
+• 她用过哪些 AI 技术？
+• 她的职业背景是什么？
+• 怎么联系她？
 
 你可以打字或者点击麦克风语音提问哦！`
         : `Hi! I'm the Resume Assistant. Ask me anything about ${profile.name}, such as:
 
-• What project experience does he have?
-• What AI technologies has he used?
-• What's his professional background?
-• How can I contact him?
+• What project experience does she have?
+• What AI technologies has she used?
+• What's her professional background?
+• How can I contact her?
 
 You can type or click the mic to ask by voice!`,
       timestamp: new Date(),
@@ -136,30 +136,22 @@ You can type or click the mic to ask by voice!`,
 
     if (msg.includes('project') || msg.includes('项目')) {
       return isZh
-        ? `苏梓铙有3个主要项目：
+        ? `苏梓铙有2个主要项目：
 
-1. **字节跳动-Prompt优化平台** (2024.08 - 2025.02)
-   - 企业级LLM内部Prompt优化平台
-   - 模板创作量提升284%，服务500+用户
-
-2. **WakeUpTime多模态相册检索APP** (2023.09 - 2024.07)
+1. **WakeUpTime多模态相册检索APP** (2023.09 - 2024.07)
    - 基于CLIP+Spark的多模态图像检索
    - 获校级创新奖
 
-3. **腾讯AI助手API开发** (2023.07 - 2023.09)
+2. **腾讯AI助手API开发** (2023.07 - 2023.09)
    - 基于QLoRA微调LLaMA2
    - 获腾讯A级评价`
-        : `Su Zinao has 3 main projects:
+        : `Su Zinao has 2 main projects:
 
-1. **ByteDance Prompt Optimization Platform** (2024.08 - 2025.02)
-   - Enterprise LLM prompt optimization platform
-   - +284% template creation, 500+ users
-
-2. **WakeUpTime Multimodal Album Search** (2023.09 - 2024.07)
+1. **WakeUpTime Multimodal Album Search** (2023.09 - 2024.07)
    - CLIP + Spark based image retrieval
    - Won school innovation award
 
-3. **Tencent AI Assistant API** (2023.07 - 2023.09)
+2. **Tencent AI Assistant API** (2023.07 - 2023.09)
    - QLoRA fine-tuned LLaMA2
    - Received Tencent A-level evaluation`;
     }
@@ -172,7 +164,7 @@ You can type or click the mic to ask by voice!`,
 • **腾讯**：QLoRA 微调 LLaMA2，获A级评价
 • **学术项目**：CLIP 多模态图像检索
 
-他熟悉的技术包括：LLM, QLoRA, LLaMA2, CLIP, NLP, Prompt Engineering`
+她熟悉的技术包括：LLM, QLoRA, LLaMA2, CLIP, NLP, Prompt Engineering`
         : `Su Zinao has extensive AI experience:
 
 • **ByteDance**: Designed enterprise Prompt optimization platform
@@ -220,24 +212,30 @@ Technologies: LLM, QLoRA, LLaMA2, CLIP, NLP, Prompt Engineering`;
       return isZh
         ? `苏梓铙的工作经历：
 
+• **香港智能制造中心** 产品经理 (2025.12 - 2026.03)
+  AI+攀岩运动硬件产品开发
+
+• **法大大** 产品经理 (2025.06 - 2025.09)
+  RAG合规助手，达成130万订单
+
 • **字节跳动** 产品经理 (2024.08 - 2025.02)
-  Prompt优化平台项目负责人
+  Prompt优化平台，模板创作量+284%
 
-• **腾讯** 项目负责人 (2023.07 - 2023.09)
-  AI助手API开发，获A级评价
-
-• **学术项目** 项目负责人 (2023.09 - 2024.07)
-  WakeUpTime多模态检索APP`
+• **大疆创新** 产品运营 (2022.07 - 2022.08)
+  Python+YOLO计算机视觉课程，培训200+人次`
         : `Su Zinao's work experience:
 
+• **CIMS HK** Product Manager (2025.12 - 2026.03)
+  AI + Climbing sports hardware product
+
+• **FADA** Product Manager (2025.06 - 2025.09)
+  RAG compliance assistant, 1.3M orders
+
 • **ByteDance** Product Manager (2024.08 - 2025.02)
-  Led Prompt Optimization Platform
+  Prompt optimization platform, +284% templates
 
-• **Tencent** Project Lead (2023.07 - 2023.09)
-  AI Assistant API, A-level evaluation
-
-• **Academic** Project Lead (2023.09 - 2024.07)
-  WakeUpTime Multimodal Search APP`;
+• **DJI** Product Operations (2022.07 - 2022.08)
+  Python+YOLO CV course, 200+ trained`;
     }
 
     return isZh
@@ -247,14 +245,14 @@ Technologies: LLM, QLoRA, LLaMA2, CLIP, NLP, Prompt Engineering`;
 • 地点：${profile.location}
 • MBTI：${profile.mbti}
 
-他专注于 AI + 产品领域，有字节跳动、腾讯等公司经验。问我具体问题了解更多！`
+她专注于 AI + 产品领域，有字节跳动、腾讯等公司经验。问我具体问题了解更多！`
       : `Based on my knowledge, ${profile.name}'s background:
 
 • Title: ${profile.titleZh}
 • Location: ${profile.location}
 • MBTI: ${profile.mbti}
 
-He focuses on AI + Product with experience at ByteDance, Tencent, etc. Ask me for more details!`;
+She focuses on AI + Product with experience at ByteDance, Tencent, etc. Ask me for more details!`;
   };
 
   // 通用发送处理
