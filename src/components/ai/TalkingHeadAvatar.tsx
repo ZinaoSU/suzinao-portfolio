@@ -291,81 +291,216 @@ const SceneContent: React.FC<{
   );
 };
 
+// ===== Edge TTS WebSocket 工具函数 =====
+const EDGE_TTS_URL =
+  'wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4';
+
+const VOICE_MAP: Record<string, string> = {
+  'zh-CN': 'zh-CN-XiaoxiaoNeural',
+  'en-US': 'en-US-JennyNeural',
+};
+
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+function escapeXml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+const HEADER_SEP = new TextEncoder().encode('\r\n\r\n');
+
+function parseBinaryMessage(buffer: ArrayBuffer): { headers: string; body: Uint8Array } | null {
+  const view = new Uint8Array(buffer);
+  let sepIdx = -1;
+  for (let i = 0; i <= view.length - 4; i++) {
+    if (view[i] === HEADER_SEP[0] && view[i+1] === HEADER_SEP[1] &&
+        view[i+2] === HEADER_SEP[2] && view[i+3] === HEADER_SEP[3]) {
+      sepIdx = i;
+      break;
+    }
+  }
+  if (sepIdx === -1) return null;
+  return {
+    headers: new TextDecoder().decode(view.slice(0, sepIdx)),
+    body: view.slice(sepIdx + 4),
+  };
+}
+
+function speakEdgeTTS(
+  text: string,
+  lang: string,
+  rate: number,
+  onStart: () => void,
+  onEnd: () => void,
+  onError: () => void,
+): () => void {
+  let active = true;
+  let ws: WebSocket | null = null;
+  let audio: HTMLAudioElement | null = null;
+  const audioChunks: Uint8Array[] = [];
+
+  const voice = VOICE_MAP[lang] || VOICE_MAP['zh-CN'];
+  const clean = text
+    .replace(/[*_~`#]/g, '')
+    .replace(/\[.*?\]\(.*?\)/g, '')
+    .replace(/\n{2,}/g, '。')
+    .replace(/\n/g, '，');
+
+  if (!clean.trim()) return () => {};
+
+  try {
+    ws = new WebSocket(EDGE_TTS_URL);
+  } catch {
+    onError();
+    return () => {};
+  }
+
+  const timeout = setTimeout(() => {
+    active = false;
+    ws?.close();
+  }, 30000);
+
+  ws.onopen = () => {
+    const configMsg =
+      `X-Timestamp:${Date.now()}\r\n` +
+      `Content-Type:application/json; charset=utf-8\r\n` +
+      `Path:speech.config\r\n\r\n` +
+      `{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"false"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}`;
+    ws!.send(configMsg);
+  };
+
+  ws.onmessage = (event) => {
+    if (!active) { ws?.close(); return; }
+
+    if (typeof event.data === 'string') {
+      if (event.data.includes('turn.start')) {
+        const ssml =
+          `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" ` +
+          `xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${lang}">` +
+          `<voice name="${voice}">` +
+          `<prosody rate="${rate.toFixed(1)}" pitch="+0%">` +
+          `${escapeXml(clean)}` +
+          `</prosody></voice></speak>`;
+
+        const ssmlMsg =
+          `X-RequestId:${generateUUID()}\r\n` +
+          `Content-Type:application/ssml+xml\r\n` +
+          `Path:ssml\r\n\r\n${ssml}`;
+        ws!.send(ssmlMsg);
+      }
+      return;
+    }
+
+    let buf: ArrayBuffer | null = null;
+    if (event.data instanceof Blob) {
+      event.data.arrayBuffer().then(b => processBuffer(b));
+      return;
+    } else if (event.data instanceof ArrayBuffer) {
+      buf = event.data;
+    }
+
+    if (buf) processBuffer(buf);
+  };
+
+  function processBuffer(buf: ArrayBuffer) {
+    const parsed = parseBinaryMessage(buf);
+    if (parsed && parsed.headers.includes('Path:audio')) {
+      audioChunks.push(parsed.body);
+    }
+  }
+
+  ws.onclose = () => {
+    clearTimeout(timeout);
+    if (!active) return;
+
+    if (audioChunks.length > 0) {
+      const totalLen = audioChunks.reduce((s, c) => s + c.length, 0);
+      const merged = new Uint8Array(totalLen);
+      let offset = 0;
+      for (const chunk of audioChunks) { merged.set(chunk, offset); offset += chunk.length; }
+      const blob = new Blob([merged], { type: 'audio/mp3' });
+      const url = URL.createObjectURL(blob);
+      audio = new Audio(url);
+      audio.onplay = onStart;
+      audio.onended = () => { URL.revokeObjectURL(url); active = false; onEnd(); };
+      audio.onerror = () => { URL.revokeObjectURL(url); active = false; onEnd(); };
+      audio.play().catch(() => { active = false; onEnd(); });
+    } else {
+      onEnd();
+    }
+  };
+
+  ws.onerror = () => {
+    clearTimeout(timeout);
+    if (active) { active = false; onError(); }
+  };
+
+  return () => {
+    active = false;
+    ws?.close();
+    if (audio) { audio.pause(); audio = null; }
+  };
+}
+
 // ===== 主组件 =====
 export const TalkingHeadAvatar = forwardRef<TalkingHeadHandle, TalkingHeadAvatarProps>(
   ({ speaking, listening, thinking, size = 300, onSpeakStart, onSpeakEnd }, ref) => {
-    const synthRef = useRef<SpeechSynthesis | null>(null);
-    const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
     const [localSpeaking, setLocalSpeaking] = useState(false);
+    const cancelRef = useRef<(() => void) | null>(null);
 
     const isActiveSpeaking = speaking || localSpeaking;
 
     const stop = () => {
-      if (utteranceRef.current && synthRef.current) {
-        synthRef.current.cancel();
-        setLocalSpeaking(false);
+      if (cancelRef.current) {
+        cancelRef.current();
+        cancelRef.current = null;
       }
+      setLocalSpeaking(false);
     };
 
     const speak = (text: string) => {
-      if (typeof window === 'undefined' || !window.speechSynthesis) return;
+      stop();
 
-      const synth = window.speechSynthesis;
-      synthRef.current = synth;
-      synth.cancel();
+      const hasChinese = /[\u4e00-\u9fff]/.test(text);
+      const lang = hasChinese ? 'zh-CN' : 'en-US';
 
-      const cleanText = text
-        .replace(/[*_~`#]/g, '')
-        .replace(/\[.*?\]\(.*?\)/g, '')
-        .replace(/\n{2,}/g, '。')
-        .replace(/\n/g, '，');
-
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utteranceRef.current = utterance;
-
-      const hasChinese = /[\u4e00-\u9fff]/.test(cleanText);
-      utterance.lang = hasChinese ? 'zh-CN' : 'en-US';
-      utterance.rate = 1.05;
-      utterance.pitch = 1.1;
-
-      const voices = synth.getVoices();
-      if (hasChinese) {
-        const zhVoice =
-          voices.find((v) => v.lang === 'zh-CN' && v.name.includes('Female')) ||
-          voices.find((v) => v.lang === 'zh-CN');
-        if (zhVoice) utterance.voice = zhVoice;
-      } else {
-        const enVoice =
-          voices.find((v) => v.lang === 'en-US' && v.name.includes('Female')) ||
-          voices.find((v) => v.lang === 'en-US');
-        if (enVoice) utterance.voice = enVoice;
-      }
-
-      utterance.onstart = () => {
-        setLocalSpeaking(true);
-        onSpeakStart?.();
-      };
-      utterance.onend = () => {
-        setLocalSpeaking(false);
-        onSpeakEnd?.();
-      };
-      utterance.onerror = () => {
-        setLocalSpeaking(false);
-        onSpeakEnd?.();
-      };
-
-      synth.speak(utterance);
+      cancelRef.current = speakEdgeTTS(
+        text,
+        lang,
+        1.05,
+        () => {
+          setLocalSpeaking(true);
+          onSpeakStart?.();
+        },
+        () => {
+          setLocalSpeaking(false);
+          onSpeakEnd?.();
+          cancelRef.current = null;
+        },
+        () => {
+          setLocalSpeaking(false);
+          onSpeakEnd?.();
+          cancelRef.current = null;
+        }
+      );
     };
 
     useImperativeHandle(ref, () => ({ speak, stop }));
 
     useEffect(() => {
-      if (typeof window !== 'undefined' && window.speechSynthesis) {
-        window.speechSynthesis.getVoices();
-        window.speechSynthesis.onvoiceschanged = () => {
-          window.speechSynthesis?.getVoices();
-        };
-      }
+      return () => {
+        if (cancelRef.current) cancelRef.current();
+      };
     }, []);
 
     return (
