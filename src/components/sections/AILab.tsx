@@ -137,19 +137,6 @@ export const AILab: React.FC = () => {
           ))}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.4 }}
-          className="text-center mt-12"
-        >
-          <p className="text-gray-500 text-sm">
-            {isZh
-              ? '🔒 所有对话仅本地处理，不会上传到服务器'
-              : '🔒 All conversations are processed locally, no data uploaded to servers'}
-          </p>
-        </motion.div>
       </div>
     </section>
   );
