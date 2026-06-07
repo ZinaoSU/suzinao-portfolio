@@ -11,7 +11,7 @@ const isDev = import.meta.env.DEV;
 export const COZE_API = {
   // 本地: /api/coze → Vite proxy → coze.site
   // 生产: 需要换成 Cloudflare Workers 代理地址
-  endpoint: isDev ? '/api/coze' : 'https://coze-proxy.zinaosu.workers.dev/stream_run',
+  endpoint: isDev ? '/api/coze' : 'https://coze-proxy.25434675.workers.dev/stream_run',
   jwt: 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjczYzAxZjc3LTY2OWEtNDE1Ni1hMDk2LTU4OWZkOGJiYWYxMSJ9.eyJpc3MiOiJodHRwczovL2FwaS5jb3plLmNuIiwiYXVkIjpbInR6TU9sYXE2aVd1a3A0ZHhpWG5yUzFYS2M4U1lwSDk0Il0sImV4cCI6ODIxMDI2Njg3Njc5OSwiaWF0IjoxNzgwNzUyMjg5LCJzdWIiOiJzcGlmZmU6Ly9hcGkuY296ZS5jbi93b3JrbG9hZF9pZGVudGl0eS9pZDo3NjQ4MjU3OTUzMzcxMjU4OTIzIiwic3JjIjoiaW5ib3VuZF9hdXRoX2FjY2Vzc190b2tlbl9pZDo3NjQ4MjcyODQ1MDg0MDMzMDMwIn0.homK_YxXlVq5NxfmJADYjGW6tPB9Enh5I7E14Gc52se1BJG5bw8jz7RIUKfAUgFHClUjGUykYZ_K5XYFCF5iF-mKQgaJOetemlX1Pn4KkZ-uQKpbDxTzHW3W9JlENQ3sDd0-H2hMUzxq9e17SG0wMNWiH42d7Xo_6uz8QmUdO3d08MBd0VVUIXoaLqbicEPOMo2AjbO7ZGh4uFc3NxuQoiQQwcphgwTag5A6Pk59y8zL5MSrnyL3G1Q09IZbValSyGvPXyesuP3CYRKbj8ln4ZcYrZjjOT8_XmGJJFwfDw-WtdlMF_dhBkax6TCOj9jyN3XqehT-NMcXhxgPm_6i9w',
   projectId: 7648247511169335339,
 } as const;
