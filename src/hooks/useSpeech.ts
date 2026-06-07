@@ -88,9 +88,16 @@ export function useSpeechRecognition(
           // 用户主动停止
           return;
         }
-        setError(`语音识别错误: ${event.error}`);
+        // 网络相关错误使用更友好的提示
+        const friendlyError =
+          event.error === 'network'
+            ? '网络连接不稳定，语音识别暂时不可用，请使用键盘输入'
+            : event.error === 'not-allowed'
+            ? '麦克风权限被拒绝，请在浏览器设置中允许麦克风访问'
+            : `语音识别错误: ${event.error}`;
+        setError(friendlyError);
         if (options.onError) {
-          options.onError(event.error);
+          options.onError(friendlyError);
         }
       };
 

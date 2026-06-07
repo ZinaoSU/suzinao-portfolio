@@ -40,3 +40,21 @@
 .read-the-docs {
   color: #888;
 }
+
+/* === 消息体 Markdown 样式 === */
+/* 换行由 <br/> 标签控制，不再依赖 CSS margin */
+.message-body {
+  line-height: 1.7;
+}
+.message-body ul,
+.message-body ol {
+  padding-left: 1.25em;
+  margin: 0.5em 0 0.8em 0;
+}
+.message-body li {
+  margin-bottom: 0.3em;
+}
+.message-body strong {
+  font-weight: 600;
+  color: #e2e8f0;
+}

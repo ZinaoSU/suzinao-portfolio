@@ -13,5 +13,13 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     allowedHosts: true,
+    proxy: {
+      // 本地开发时代理 Coze API，绕过 CORS
+      '/api/coze': {
+        target: 'https://p7gpkjk7wn.coze.site',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/coze/, '/stream_run'),
+      },
+    },
   },
 })

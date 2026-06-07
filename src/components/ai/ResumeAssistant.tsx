@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Bot, User, Loader2, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import { Card } from '../ui/Card';
-import { profile } from '../../data/profile';
 import { DigitalHuman, AvatarState, DigitalHumanHandle } from './DigitalHuman';
 import { useSpeechRecognition } from '../../hooks/useSpeech';
+import { callCozeAgent, generateSessionId } from '../../config/coze';
 
 interface Message {
   id: string;
@@ -14,7 +14,70 @@ interface Message {
   timestamp: Date;
 }
 
-const API_BASE = 'https://suzinao-portfolio-production.up.railway.app/api';
+/** 轻量 Markdown → HTML：用 <br/> 控制换行，不依赖 CSS margin */
+function renderSimpleMarkdown(text: string): string {
+  // 1. 转义 HTML
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // 2. 粗体：**text**
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+  const lines = html.split('\n');
+  const out: string[] = [];
+  let inUl = false;
+  let inOl = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    // 空行 = 段落分隔（<br/><br/> 产生间距）
+    if (line === '') {
+      if (inUl) { out.push('</ul>'); inUl = false; }
+      if (inOl) { out.push('</ol>'); inOl = false; }
+      // 避免连续多个空行产生过多间距
+      if (out.length > 0 && !out[out.length - 1].includes('<br/><br/>')) {
+        out.push('<br/><br/>');
+      }
+      continue;
+    }
+
+    // 无序列表
+    const ulMatch = line.match(/^[-•]\s+(.+)/);
+    if (ulMatch) {
+      if (inOl) { out.push('</ol>'); inOl = false; }
+      if (!inUl) { out.push('<ul>'); inUl = true; }
+      out.push(`<li>${ulMatch[1]}</li>`);
+      continue;
+    }
+
+    // 有序列表
+    const olMatch = line.match(/^\d+[.)]\s+(.+)/);
+    if (olMatch) {
+      if (inUl) { out.push('</ul>'); inUl = false; }
+      if (!inOl) { out.push('<ol>'); inOl = true; }
+      out.push(`<li>${olMatch[1]}</li>`);
+      continue;
+    }
+
+    // 普通文本：关闭列表
+    if (inUl) { out.push('</ul>'); inUl = false; }
+    if (inOl) { out.push('</ol>'); inOl = false; }
+    out.push(line);
+
+    // 如果下一行非空（同一段内的换行），加单个 <br/>
+    if (i < lines.length - 1 && lines[i + 1].trim() !== '') {
+      out.push('<br/>');
+    }
+  }
+
+  if (inUl) { out.push('</ul>'); }
+  if (inOl) { out.push('</ol>'); }
+
+  return out.join('');
+}
 
 export const ResumeAssistant: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const { t, i18n } = useTranslation();
@@ -24,15 +87,14 @@ export const ResumeAssistant: React.FC<{ onBack: () => void }> = ({ onBack }) =>
       id: '1',
       role: 'assistant',
       content: isZh
-        ? `你好！我是简历对话助手。你可以问我关于 ${profile.nameZh} 的任何问题，比如：
+        ? `你好！我是苏梓铙的数字人简历助手 👋你可以把我当成一个会说话的简历——随便问，我能告诉你关于她的几乎所有公开信息：🎯 想聊实习经历？她有香港智能制造中心AI 3D攀岩相机、法大大的 AI 合规助手客服机器人、北京计算美学商用AIGC生图，还有多项项目经历。你也可以问我任何关于她的问题，比如：
 
-• 她有什么项目经验？
-• 她用过哪些 AI 技术？
-• 她的职业背景是什么？
-• 怎么联系她？
+简单介绍一下苏梓铙吧~
+对她来讲成长最多的一段经历是什么？
+她的职业发展计划是怎样的？
 
-你可以打字或者点击麦克风语音提问哦！`
-        : `Hi! I'm the Resume Assistant. Ask me anything about ${profile.name}, such as:
+可以打字或者点击麦克风语音提问哦！`
+        : `Hi! I'm Su Zinao's Digital Human Resume Assistant! Ask me anything about her, such as:
 
 • What project experience does she have?
 • What AI technologies has she used?
@@ -47,8 +109,11 @@ You can type or click the mic to ask by voice!`,
   const [isLoading, setIsLoading] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const duixDigitalHumanRef = useRef<DigitalHumanHandle>(null);
+
+  // Coze 会话 ID（整个对话期间保持不变，维持多轮上下文）
+  const cozeSessionIdRef = useRef(generateSessionId());
 
   // 语音识别
   const {
@@ -67,12 +132,12 @@ You can type or click the mic to ask by voice!`,
   // 语音合成 (Edge TTS 已集成在 TalkingHeadAvatar 中)
   const isTtsSupported = true;
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
+  // 只滚动聊天容器内部，不影响页面滚动位置
   useEffect(() => {
-    scrollToBottom();
+    const el = chatContainerRef.current;
+    if (el) {
+      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    }
   }, [messages]);
 
   // 语音识别结果实时更新到输入框
@@ -97,156 +162,20 @@ You can type or click the mic to ask by voice!`,
     }
   }, [isListening]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 调用后端 RAG API
-  const callResumeAPI = async (userMessage: string, history: { role: string; content: string }[]) => {
+  // 调用 Coze 智能体 API（流式 SSE）
+  const callCozeWithRetry = async (userMessage: string): Promise<string> => {
     try {
-      const response = await fetch(`${API_BASE}/resume/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: userMessage,
-          history: history,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('API request failed');
-      }
-
-      const data = await response.json();
-      return data.response;
+      console.log('[Coze] Sending:', userMessage.substring(0, 50));
+      const response = await callCozeAgent(userMessage, cozeSessionIdRef.current);
+      console.log('[Coze] Response:', response.substring(0, 60));
+      return response;
     } catch (error) {
-      console.error('Resume API error:', error);
-      // Fallback to local response
-      return getLocalResponse(userMessage);
-    }
-  };
-
-  // 本地备用回答（当后端不可用时）
-  const getLocalResponse = (userMessage: string): string => {
-    const msg = userMessage.toLowerCase();
-
-    if (msg.includes('project') || msg.includes('项目')) {
+      console.error('[Coze] API error:', error);
+      // 兜底提示
       return isZh
-        ? `苏梓铙有2个主要项目：
-
-1. **性能领域AI助手API开发（腾讯MINI项目）** (2023.07 - 2023.09)
-   - QLoRA+LLaMA2+LangChain训练框架，Streamlit可视化平台
-   - 技术方案获腾讯A级评价，应用于核心业务
-
-2. **多模态相册检索APP「WakeUpTime」** (2023.09 - 2024.07)
-   - CLIP+Spark相册检索算法，支持文本/图像/语音搜索
-   - 搜索准确率提升25%，精准定位产品差异化`
-        : `Su Zinao has 2 main projects:
-
-1. **Performance AI Assistant API (Tencent MINI)** (2023.07 - 2023.09)
-   - QLoRA+LLaMA2+LangChain framework, Streamlit visualization
-   - A-level evaluation, deployed in core business
-
-2. **WakeUpTime Multimodal Album Search** (2023.09 - 2024.07)
-   - CLIP+Spark retrieval, text/image/voice search
-   - +25% accuracy, precise product differentiation`;
+        ? `抱歉，AI 助手暂时无法连接，请稍后重试。\n\n（错误：${error instanceof Error ? error.message : '未知错误'}）`
+        : `Sorry, the AI assistant is temporarily unavailable. Please try again later.\n\n(Error: ${error instanceof Error ? error.message : 'Unknown error'})`;
     }
-
-    if (msg.includes('ai') || msg.includes('llm') || msg.includes('人工智能') || msg.includes('gpt')) {
-      return isZh
-        ? `苏梓铙在 AI 方面有丰富的经验：
-
-• **北京计算美学科技**：负责AI文生图企业产品，推动月活提升120%
-• **腾讯MINI项目**：QLoRA+LLaMA2+LangChain训练框架+Streamlit平台，获A级评价
-• **学术项目**：CLIP+Spark多模态相册检索，准确率提升25%
-
-她熟悉的技术包括：LLM, QLoRA, LLaMA2, LangChain, CLIP, Spark, NLP, AIGC, Prompt Engineering`
-        : `Su Zinao has extensive AI experience:
-
-• **Nolibox**: Led AI text-to-image enterprise product, 120% MAU growth
-• **Tencent MINI**: QLoRA+LLaMA2+LangChain framework + Streamlit, A-level
-• **Academic**: CLIP+Spark multimodal retrieval, +25% accuracy
-
-Technologies: LLM, QLoRA, LLaMA2, LangChain, CLIP, Spark, NLP, AIGC, Prompt Engineering`;
-    }
-
-    if (msg.includes('contact') || msg.includes('联系') || msg.includes('email') || msg.includes('邮箱')) {
-      return isZh
-        ? `你可以联系苏梓铙：
-
-📧 邮箱：suzinao.apply@gmail.com
-📱 电话：18948666031
-💬 WhatsApp：+852 84956448`
-        : `Contact Su Zinao:
-
-📧 Email：suzinao.apply@gmail.com
-📱 Phone：18948666031
-💬 WhatsApp：+852 84956448`;
-    }
-
-    if (msg.includes('skill') || msg.includes('技术') || msg.includes('栈')) {
-      return isZh
-        ? `苏梓铙的技术栈包括：
-
-**AI/ML**: LLM, Prompt Engineering, QLoRA, CLIP, NLP
-**后端**: FastAPI, Docker
-**移动**: React Native
-**大数据**: Apache Spark
-
-**产品能力**: 产品设计、数据分析、用户研究、项目管理`
-        : `Su Zinao's technical skills:
-
-**AI/ML**: LLM, Prompt Engineering, QLoRA, CLIP, NLP
-**Backend**: FastAPI, Docker
-**Mobile**: React Native
-**Big Data**: Apache Spark
-
-**Product**: Product Design, Data Analysis, User Research, Project Management`;
-    }
-
-    if (msg.includes('experience') || msg.includes('work') || msg.includes('工作')) {
-      return isZh
-        ? `苏梓铙的工作经历：
-
-• **香港智能制造中心** 产品经理实习生 (2025.12 - 2026.03)
-  AI+攀岩运动硬件产品开发
-
-• **法大大** 产品经理实习生 (2025.06 - 2025.09)
-  RAG合规知识库+AI客服机器人，80%自动化响应
-
-• **北京计算美学科技** 产品经理实习生 (2024.05 - 2024.11)
-  Nolibox AI文生图产品，月活提升120%
-
-• **大疆创新** 产品运营实习生 (2022.07 - 2022.08)
-  Python+YOLO课程，98%满意度，报名率+20%`
-        : `Su Zinao's work experience:
-
-• **CIMS HK** Product Manager Intern (2025.12 - 2026.03)
-  AI + Climbing sports hardware product
-
-• **FADA** Product Manager Intern (2025.06 - 2025.09)
-  RAG knowledge base + AI chatbot, 80% auto response
-
-• **Nolibox** Product Manager Intern (2024.05 - 2024.11)
-  AI text-to-image product, 120% MAU growth
-
-• **DJI** Product Operations Intern (2022.07 - 2022.08)
-  Python+YOLO course, 98% satisfaction, +20% enrollment`;
-    }
-
-    return isZh
-      ? `根据我的了解，${profile.nameZh} 的背景：
-
-• 职位：${profile.titleZh}
-• 地点：${profile.location}
-• MBTI：${profile.mbti}
-
-她专注于 AI + 产品领域，有北京计算美学科技、腾讯等公司经验。问我具体问题了解更多！`
-      : `Based on my knowledge, ${profile.name}'s background:
-
-• Title: ${profile.titleZh}
-• Location: ${profile.location}
-• MBTI: ${profile.mbti}
-
-She focuses on AI + Product with experience at Nolibox, Tencent, etc. Ask me for more details!`;
   };
 
   // 通用发送处理
@@ -267,15 +196,9 @@ She focuses on AI + Product with experience at Nolibox, Tencent, etc. Ask me for
       setInput('');
       setIsLoading(true);
 
-      // 构建历史消息用于 API
-      const history = messages.map((m) => ({
-        role: m.role as string,
-        content: m.content,
-      }));
-
       try {
-        // 尝试调用后端 RAG API
-        const response = await callResumeAPI(text, history);
+        // 调用 Coze 智能体（SSE 流式）
+        const response = await callCozeWithRetry(text);
 
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
@@ -299,7 +222,7 @@ She focuses on AI + Product with experience at Nolibox, Tencent, etc. Ask me for
         setIsLoading(false);
       }
     },
-    [isLoading, messages, isZh]
+    [isLoading, isZh]
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -423,7 +346,7 @@ She focuses on AI + Product with experience at Nolibox, Tencent, etc. Ask me for
           {/* 右侧：对话区域 */}
           <div className="flex-1 flex flex-col min-w-0">
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+            <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-5 space-y-4">
               {messages.map((message) => (
                 <motion.div
                   key={message.id}
@@ -453,9 +376,15 @@ She focuses on AI + Product with experience at Nolibox, Tencent, etc. Ask me for
                         : 'bg-dark-cardLight text-gray-300 rounded-tl-sm'
                     }`}
                   >
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                      {message.content}
-                    </p>
+                    <div
+                      className="message-body text-sm leading-relaxed"
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          message.role === 'assistant'
+                            ? renderSimpleMarkdown(message.content)
+                            : message.content,
+                      }}
+                    />
                   </div>
                 </motion.div>
               ))}
@@ -485,7 +414,6 @@ She focuses on AI + Product with experience at Nolibox, Tencent, etc. Ask me for
                   </div>
                 </div>
               )}
-              <div ref={messagesEndRef} />
             </div>
 
             {/* Input Area */}
