@@ -13,6 +13,7 @@ export interface DigitalHumanHandle {
 interface DigitalHumanProps {
   state: AvatarState;
   size?: number;
+  onSpeakEnd?: () => void;
 }
 
 // 音波条 - 说话时显示
@@ -65,7 +66,7 @@ const ListeningRipple: React.FC = () => (
 );
 
 export const DigitalHuman = forwardRef<DigitalHumanHandle, DigitalHumanProps>(
-  ({ state, size = 160 }, ref) => {
+  ({ state, size = 160, onSpeakEnd }, ref) => {
     const avatarRef = useRef<TalkingHeadHandle>(null);
     const [avatarSpeaking, setAvatarSpeaking] = React.useState(false);
 
@@ -78,12 +79,12 @@ export const DigitalHuman = forwardRef<DigitalHumanHandle, DigitalHumanProps>(
       },
       stop: () => {
         avatarRef.current?.stop();
+        setAvatarSpeaking(false);
       },
       setMuted: (_muted: boolean) => {
-        if (_muted) {
-          avatarRef.current?.stop();
-          setAvatarSpeaking(false);
-        }
+        avatarRef.current?.setMuted(_muted);
+        // 静音时姿势保持 speaking，取消静音时也不改状态
+        // 真正的状态切换由 onSpeakEnd 驱动
       },
     }));
 
@@ -114,7 +115,7 @@ export const DigitalHuman = forwardRef<DigitalHumanHandle, DigitalHumanProps>(
               thinking={state === 'thinking'}
               size={size}
               onSpeakStart={() => setAvatarSpeaking(true)}
-              onSpeakEnd={() => setAvatarSpeaking(false)}
+              onSpeakEnd={() => { setAvatarSpeaking(false); onSpeakEnd?.(); }}
             />
           </div>
 

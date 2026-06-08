@@ -38,7 +38,7 @@ interface CozeSSEEvent {
  * @param sessionId 会话 ID（用于维持多轮对话上下文）
  * @returns 完整的 AI 回复文本
  */
-export async function callCozeAgent(text: string, sessionId: string): Promise<string> {
+export async function callCozeAgent(text: string, sessionId: string, signal?: AbortSignal): Promise<string> {
   // Coze 官方请求格式（多模态嵌套结构）
   const body = {
     content: {
@@ -63,6 +63,7 @@ export async function callCozeAgent(text: string, sessionId: string): Promise<st
       'Authorization': `Bearer ${COZE_API.jwt}`,
     },
     body: JSON.stringify(body),
+    signal,
   });
 
   if (!response.ok) {

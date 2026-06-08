@@ -111,6 +111,8 @@ You can type or click the mic to ask by voice!`,
   const [isSpeaking, setIsSpeaking] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const duixDigitalHumanRef = useRef<DigitalHumanHandle>(null);
+  const muteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   // Coze 会话 ID（整个对话期间保持不变，维持多轮上下文）
   const cozeSessionIdRef = useRef(generateSessionId());
@@ -131,6 +133,16 @@ You can type or click the mic to ask by voice!`,
 
   // 语音合成 (Edge TTS 已集成在 TalkingHeadAvatar 中)
   const isTtsSupported = true;
+
+  // 卸载时清理 mute 定时器
+  useEffect(() => {
+    return () => {
+      if (muteTimerRef.current) {
+        clearTimeout(muteTimerRef.current);
+        muteTimerRef.current = null;
+      }
+    };
+  }, []);
 
   // 只滚动聊天容器内部，不影响页面滚动位置
   useEffect(() => {
@@ -162,14 +174,18 @@ You can type or click the mic to ask by voice!`,
     }
   }, [isListening]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 调用 Coze 智能体 API（流式 SSE）
-  const callCozeWithRetry = async (userMessage: string): Promise<string> => {
+  // 调用 Coze 智能体 API（流式 SSE，支持 AbortController 中断）
+  const callCozeWithRetry = async (userMessage: string, signal?: AbortSignal): Promise<string> => {
     try {
       console.log('[Coze] Sending:', userMessage.substring(0, 50));
-      const response = await callCozeAgent(userMessage, cozeSessionIdRef.current);
+      const response = await callCozeAgent(userMessage, cozeSessionIdRef.current, signal);
       console.log('[Coze] Response:', response.substring(0, 60));
       return response;
     } catch (error) {
+      // AbortError 是用户主动中断，不需要兜底提示
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw error;
+      }
       console.error('[Coze] API error:', error);
       // 兜底提示
       return isZh
@@ -181,9 +197,20 @@ You can type or click the mic to ask by voice!`,
   // 通用发送处理
   const handleSendWithText = useCallback(
     async (text: string) => {
-      if (!text || isLoading) return;
+      if (!text) return;
 
+      // 清除静音定时器
+      if (muteTimerRef.current) {
+        clearTimeout(muteTimerRef.current);
+        muteTimerRef.current = null;
+      }
+
+      // 中断当前的任何操作（语音播放 + Coze 请求）
       duixDigitalHumanRef.current?.stop();
+      if (abortRef.current) {
+        abortRef.current.abort();
+        abortRef.current = null;
+      }
 
       const userMessage: Message = {
         id: Date.now().toString(),
@@ -195,10 +222,18 @@ You can type or click the mic to ask by voice!`,
       setMessages((prev) => [...prev, userMessage]);
       setInput('');
       setIsLoading(true);
+      setIsSpeaking(false); // 中断后重置说话状态
+
+      // 创建新的 AbortController
+      const controller = new AbortController();
+      abortRef.current = controller;
 
       try {
         // 调用 Coze 智能体（SSE 流式）
-        const response = await callCozeWithRetry(text);
+        const response = await callCozeWithRetry(text, controller.signal);
+
+        // 如果已被中断，不再添加回复
+        if (controller.signal.aborted) return;
 
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
@@ -209,25 +244,29 @@ You can type or click the mic to ask by voice!`,
 
         setMessages((prev) => [...prev, assistantMessage]);
 
-        // 用数字人说话（内部使用浏览器 TTS）
+        // 用数字人说话（edge-tts-proxy，音质接近 Azure Neural）
         setIsSpeaking(true);
         duixDigitalHumanRef.current?.speak(response);
-
-        // 估算说话时长，结束后恢复状态
-        const estimatedDuration = Math.max(3000, response.length * 50);
-        setTimeout(() => setIsSpeaking(false), estimatedDuration);
       } catch (error) {
+        // AbortError = 用户主动中断，静默处理
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          console.log('[Coze] Aborted by user');
+          return;
+        }
         console.error('Error:', error);
       } finally {
+        if (abortRef.current === controller) {
+          abortRef.current = null;
+        }
         setIsLoading(false);
       }
     },
-    [isLoading, isZh]
+    [isZh]
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim()) return;
     await handleSendWithText(input.trim());
   };
 
@@ -271,13 +310,31 @@ You can type or click the mic to ask by voice!`,
                   : 'AI Digital Human · Text & Voice'}
               </p>
             </div>
-            {/* TTS 开关 */}
+            {/* TTS 开关 — 静音后 10 秒自动回到 idle，期间可随时恢复 */}
             {isTtsSupported && (
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => {
-                  setTtsEnabled(!ttsEnabled);
-                  if (ttsEnabled) duixDigitalHumanRef.current?.stop();
+                  const newTtsEnabled = !ttsEnabled;
+                  setTtsEnabled(newTtsEnabled);
+                  duixDigitalHumanRef.current?.setMuted(!newTtsEnabled);
+
+                  // 清除旧定时器
+                  if (muteTimerRef.current) {
+                    clearTimeout(muteTimerRef.current);
+                    muteTimerRef.current = null;
+                  }
+
+                  // 静音 → 启动 10s 倒计时，超时后自动 stop + 回到 idle
+                  if (!newTtsEnabled) {
+                    muteTimerRef.current = setTimeout(() => {
+                      duixDigitalHumanRef.current?.stop();
+                      setIsSpeaking(false);
+                      setTtsEnabled(true); // 恢复按钮状态
+                      muteTimerRef.current = null;
+                    }, 10000);
+                  }
+                  // 取消静音 → 已清除定时器，音频自动恢复
                 }}
                 className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
                   ttsEnabled
@@ -296,7 +353,7 @@ You can type or click the mic to ask by voice!`,
         <div className="flex-1 flex overflow-hidden">
           {/* 左侧：数字人动画 */}
           <div className="w-[200px] flex-shrink-0 flex flex-col items-center justify-center bg-gradient-to-b from-dark-card/50 to-dark-bg/50 border-r border-white/5 p-4">
-            <DigitalHuman ref={duixDigitalHumanRef} state={getAvatarState()} size={130} />
+            <DigitalHuman ref={duixDigitalHumanRef} state={getAvatarState()} size={130} onSpeakEnd={() => setIsSpeaking(false)} />
 
             {/* 状态文字 */}
             <motion.div
@@ -466,12 +523,19 @@ You can type or click the mic to ask by voice!`,
                       ? isZh
                         ? '语音识别中...'
                         : 'Recognizing speech...'
+                      : isLoading
+                      ? isZh
+                        ? '回复中，输入新消息可打断...'
+                        : 'Replying... type to interrupt'
+                      : isSpeaking
+                      ? isZh
+                        ? '正在播报，输入新消息可打断...'
+                        : 'Speaking... type to interrupt'
                       : isZh
                       ? '打字或点击麦克风提问...'
                       : 'Type or click mic to ask...'
                   }
-                  disabled={isLoading}
-                  className="flex-1 bg-dark-cardLight border border-white/10 rounded-full px-5 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-purple/50 transition-colors disabled:opacity-50 text-sm"
+                  className="flex-1 bg-dark-cardLight border border-white/10 rounded-full px-5 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-purple/50 transition-colors text-sm"
                 />
 
                 {/* 麦克风按钮 */}
@@ -480,12 +544,11 @@ You can type or click the mic to ask by voice!`,
                     type="button"
                     whileTap={{ scale: 0.9 }}
                     onClick={handleMicClick}
-                    disabled={isLoading}
                     className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
                       isListening
                         ? 'bg-red-500 text-white shadow-lg shadow-red-500/30'
                         : 'bg-dark-cardLight border border-white/10 text-gray-400 hover:text-white hover:border-primary-purple/30'
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    }`}
                     title={isListening ? (isZh ? '停止录音' : 'Stop recording') : (isZh ? '语音输入' : 'Voice input')}
                   >
                     {isListening ? <MicOff size={20} /> : <Mic size={20} />}
@@ -495,7 +558,7 @@ You can type or click the mic to ask by voice!`,
                 {/* 发送按钮 */}
                 <motion.button
                   type="submit"
-                  disabled={!input.trim() || isLoading}
+                  disabled={!input.trim()}
                   whileTap={{ scale: 0.9 }}
                   className="w-12 h-12 rounded-full bg-gradient-to-r from-primary-purple to-primary-violet flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-primary-purple/30 transition-all"
                 >
