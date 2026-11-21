@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Bot, User, Loader2, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
+import { Send, Bot, User, Loader2, Mic, MicOff, Volume2, VolumeX, BrainCircuit } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { DigitalHuman, AvatarState, DigitalHumanHandle } from './DigitalHuman';
+import { AgentTracePanel } from './AgentTracePanel';
 import { useSpeechRecognition } from '../../hooks/useSpeech';
-import { callCozeAgent, generateSessionId } from '../../config/coze';
+import { callAgent, type AgentTraceStep, type AgentUsage, type ChatHistoryMessage } from '../../config/agent';
 
 interface Message {
   id: string;
@@ -109,13 +110,19 @@ You can type or click the mic to ask by voice!`,
   const [isLoading, setIsLoading] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [traceSteps, setTraceSteps] = useState<AgentTraceStep[]>([]);
+  const [traceUsage, setTraceUsage] = useState<AgentUsage | null>(null);
+  const [showTrace, setShowTrace] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const duixDigitalHumanRef = useRef<DigitalHumanHandle>(null);
   const muteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Coze 会话 ID（整个对话期间保持不变，维持多轮上下文）
-  const cozeSessionIdRef = useRef(generateSessionId());
+  // 对话历史镜像（供 Agent 请求携带多轮上下文；不含欢迎消息）
+  const messagesRef = useRef<Message[]>([]);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   // 语音识别
   const {
@@ -174,19 +181,39 @@ You can type or click the mic to ask by voice!`,
     }
   }, [isListening]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 调用 Coze 智能体 API（流式 SSE，支持 AbortController 中断）
-  const callCozeWithRetry = async (userMessage: string, signal?: AbortSignal): Promise<string> => {
+  // 调用自研 RAG + Agent（SSE 流式：trace + answer delta）
+  const callAgentWithStream = async (
+    userMessage: string,
+    signal?: AbortSignal,
+    onDelta?: (fullText: string) => void
+  ): Promise<string> => {
     try {
-      console.log('[Coze] Sending:', userMessage.substring(0, 50));
-      const response = await callCozeAgent(userMessage, cozeSessionIdRef.current, signal);
-      console.log('[Coze] Response:', response.substring(0, 60));
+      console.log('[Agent] Sending:', userMessage.substring(0, 50));
+
+      // 组装多轮上下文（最近 8 条，排除欢迎消息）
+      const history: ChatHistoryMessage[] = messagesRef.current
+        .filter((m) => m.id !== '1')
+        .slice(-8)
+        .map(({ role, content }) => ({ role, content }));
+
+      const response = await callAgent(userMessage, history, signal, (event) => {
+        if (event.type === 'trace') {
+          setTraceSteps((prev) => [...prev, event.step]);
+        } else if (event.type === 'answer') {
+          onDelta?.(event.delta);
+        } else if (event.type === 'done') {
+          setTraceUsage(event.usage);
+        }
+      });
+
+      console.log('[Agent] Response:', response.substring(0, 60));
       return response;
     } catch (error) {
       // AbortError 是用户主动中断，不需要兜底提示
       if (error instanceof DOMException && error.name === 'AbortError') {
         throw error;
       }
-      console.error('[Coze] API error:', error);
+      console.error('[Agent] API error:', error);
       // 兜底提示
       return isZh
         ? `抱歉，AI 助手暂时无法连接，请稍后重试。\n\n（错误：${error instanceof Error ? error.message : '未知错误'}）`
@@ -205,7 +232,7 @@ You can type or click the mic to ask by voice!`,
         muteTimerRef.current = null;
       }
 
-      // 中断当前的任何操作（语音播放 + Coze 请求）
+      // 中断当前的任何操作（语音播放 + Agent 请求）
       duixDigitalHumanRef.current?.stop();
       if (abortRef.current) {
         abortRef.current.abort();
@@ -223,34 +250,56 @@ You can type or click the mic to ask by voice!`,
       setInput('');
       setIsLoading(true);
       setIsSpeaking(false); // 中断后重置说话状态
+      setTraceSteps([]);    // 重置 Agent 执行轨迹
+      setTraceUsage(null);
 
       // 创建新的 AbortController
       const controller = new AbortController();
       abortRef.current = controller;
 
-      try {
-        // 调用 Coze 智能体（SSE 流式）
-        const response = await callCozeWithRetry(text, controller.signal);
+      // 流式回复的占位消息（首个 delta 到达时创建）
+      const streamId = (Date.now() + 1).toString();
+      let streamCreated = false;
 
-        // 如果已被中断，不再添加回复
+      try {
+        // 调用自研 Agent（SSE 流式：trace + delta 实时渲染）
+        const response = await callAgentWithStream(text, controller.signal, (delta) => {
+          if (controller.signal.aborted) return;
+          if (!streamCreated) {
+            streamCreated = true;
+            setIsLoading(false);
+            setMessages((prev) => [
+              ...prev,
+              { id: streamId, role: 'assistant', content: delta, timestamp: new Date() },
+            ]);
+          } else {
+            setMessages((prev) =>
+              prev.map((m) => (m.id === streamId ? { ...m, content: m.content + delta } : m))
+            );
+          }
+        });
+
+        // 如果已被中断，不再触发语音播报
         if (controller.signal.aborted) return;
 
-        const assistantMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: response,
-          timestamp: new Date(),
-        };
-
-        setMessages((prev) => [...prev, assistantMessage]);
+        // 兜底：Agent 没有产出任何 delta（如直接报错返回完整文本）
+        if (!streamCreated) {
+          const assistantMessage: Message = {
+            id: streamId,
+            role: 'assistant',
+            content: response,
+            timestamp: new Date(),
+          };
+          setMessages((prev) => [...prev, assistantMessage]);
+        }
 
         // 用数字人说话（edge-tts-proxy，音质接近 Azure Neural）
         setIsSpeaking(true);
         duixDigitalHumanRef.current?.speak(response);
       } catch (error) {
-        // AbortError = 用户主动中断，静默处理
+        // AbortError = 用户主动中断，静默处理（保留已流式输出的部分）
         if (error instanceof DOMException && error.name === 'AbortError') {
-          console.log('[Coze] Aborted by user');
+          console.log('[Agent] Aborted by user');
           return;
         }
         console.error('Error:', error);
@@ -306,10 +355,23 @@ You can type or click the mic to ask by voice!`,
               </h3>
               <p className="text-sm text-gray-400">
                 {isZh
-                  ? 'AI 数字人 · 支持文字 & 语音对话'
-                  : 'AI Digital Human · Text & Voice'}
+                  ? '自研 RAG + Agent 数字人 · 文字 & 语音'
+                  : 'Self-built RAG + Agent · Text & Voice'}
               </p>
             </div>
+            {/* Agent 过程可视化开关（可开关调试面板） */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setShowTrace((v) => !v)}
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                showTrace
+                  ? 'bg-primary-purple text-white'
+                  : 'bg-primary-purple/20 text-primary-purple'
+              }`}
+              title={isZh ? '看看我是怎么想的（Agent 执行轨迹）' : 'Show how I think (Agent trace)'}
+            >
+              <BrainCircuit size={16} />
+            </motion.button>
             {/* TTS 开关 — 静音后 10 秒自动回到 idle，期间可随时恢复 */}
             {isTtsSupported && (
               <motion.button
@@ -348,6 +410,13 @@ You can type or click the mic to ask by voice!`,
             )}
           </div>
         </div>
+
+        {/* Agent 执行轨迹面板（可开关） */}
+        <AnimatePresence>
+          {showTrace && (
+            <AgentTracePanel steps={traceSteps} usage={traceUsage} onClose={() => setShowTrace(false)} />
+          )}
+        </AnimatePresence>
 
         {/* 主内容区域：数字人 + 聊天 */}
         <div className="flex-1 flex overflow-hidden">
