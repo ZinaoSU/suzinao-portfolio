@@ -40,8 +40,8 @@ export const experienceData: Experience[] = [
     highlight: '40% Deflection · 85%+ Accuracy',
     highlightZh: '40%问题拦截 · 85%+准确率',
     images: [
-      assetUrl('/images/hikvision-1.jpg'),
-      assetUrl('/images/hikvision-2.jpg'),
+      assetUrl('/images/hikvision-1.webp'),
+      assetUrl('/images/hikvision-2.webp'),
     ],
   },
   {

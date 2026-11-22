@@ -118,6 +118,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
               <motion.img
                 key={currentIndex}
                 src={images[currentIndex]}
+                decoding="async"
                 alt={`Image ${currentIndex + 1}`}
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}

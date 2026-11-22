@@ -51,6 +51,7 @@ export const ExperienceSection: React.FC = () => {
                       alt={isZh ? exp.companyZh : exp.company}
                       className="w-full h-full object-cover"
                       loading="lazy"
+                      decoding="async"
                     />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">

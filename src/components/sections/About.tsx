@@ -48,6 +48,7 @@ export const About: React.FC = () => {
                     alt={isZh ? profile.nameZh : profile.name}
                     className="w-full h-full object-cover"
                     loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 <div>

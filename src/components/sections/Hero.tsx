@@ -66,6 +66,8 @@ export const Hero: React.FC = () => {
                 src={assetUrl('/images/image5.webp')}
                 alt="Su Zinao"
                 className="w-full h-full object-cover"
+                fetchPriority="high"
+                decoding="async"
               />
             </div>
           </div>

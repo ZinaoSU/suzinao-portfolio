@@ -40,6 +40,14 @@ export const Carousel: React.FC<CarouselProps> = ({
     return () => clearInterval(timer);
   }, [isPlaying, interval, goNext, images.length]);
 
+  // 预加载全部图片：轮播切换 / 打开大图时不再等待网络
+  useEffect(() => {
+    images.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, [images]);
+
   const variants = {
     enter: (direction: number) => ({
       x: direction > 0 ? 300 : -300,
@@ -74,6 +82,7 @@ export const Carousel: React.FC<CarouselProps> = ({
               opacity: { duration: 0.2 },
             }}
             className="absolute inset-0 w-full h-full object-contain cursor-pointer"
+            decoding="async"
             onClick={() => onImageClick?.(currentIndex)}
           />
         </AnimatePresence>
