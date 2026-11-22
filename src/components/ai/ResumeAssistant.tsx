@@ -503,13 +503,6 @@ You can type or click the mic to ask by voice!`,
                       <Bot size={16} className="text-primary-purple" />
                     )}
                   </div>
-                  {message.role === 'assistant' && !!message.trace?.length && (
-                    <TraceBlock
-                      steps={message.trace}
-                      usage={message.usage ?? null}
-                      live={message.id === liveMsgId}
-                    />
-                  )}
                   <div
                     className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                       message.role === 'user'
@@ -517,6 +510,13 @@ You can type or click the mic to ask by voice!`,
                         : 'bg-dark-cardLight text-gray-300 rounded-tl-sm'
                     }`}
                   >
+                    {message.role === 'assistant' && !!message.trace?.length && (
+                      <TraceBlock
+                        steps={message.trace}
+                        usage={message.usage ?? null}
+                        live={message.id === liveMsgId}
+                      />
+                    )}
                     <div
                       className="message-body text-sm leading-relaxed"
                       dangerouslySetInnerHTML={{

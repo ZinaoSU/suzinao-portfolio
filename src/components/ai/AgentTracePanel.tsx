@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, FileText, ChevronDown, Loader2 } from 'lucide-react';
+import { Search, FileText, ChevronDown, Loader2, CheckCircle2, BrainCircuit, PenLine, Sparkles } from 'lucide-react';
 import type { AgentTraceStep, AgentUsage } from '../../config/agent';
 
 interface TraceBlockProps {
@@ -17,10 +17,24 @@ interface RetrievalHit {
   score?: number;
 }
 
+/** 步骤名 → 展示文案与图标（WorkBuddy 风格：动词短语 + 状态） */
+function stepMeta(name: string): { icon: React.ReactNode; label: string } {
+  if (name.includes('开始思考')) return { icon: <BrainCircuit size={12} />, label: '理解问题' };
+  if (name.includes('检索知识库')) return { icon: <Search size={12} />, label: '检索知识库' };
+  if (name.includes('读取完整简历')) return { icon: <FileText size={12} />, label: '读取完整简历' };
+  if (name.includes('组织回答')) return { icon: <PenLine size={12} />, label: '组织回答' };
+  return { icon: <Sparkles size={12} />, label: name.replace(/^[^\u4e00-\u9fa5]+/, '') || '处理中' };
+}
+
+function fmtMs(ms?: number): string {
+  if (typeof ms !== 'number' || ms <= 0) return '';
+  return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`;
+}
+
 /**
- * 消息内嵌「思考过程」块（仿 DeepSeek/Claude 交互）
- * - 思考中：步骤实时逐条出现，最后一步带 spinner
- * - 回答完成：自动折叠为一行摘要，点击可展开/收起明细
+ * 消息内嵌「深度思考」块（WorkBuddy 风格）
+ * - 思考中：逐条显示「正在检索知识库…」，最后一步带 spinner
+ * - 回答完成：自动折叠为「✨ 已深度思考（19.1s）」一行，点击展开明细
  */
 export const TraceBlock: React.FC<TraceBlockProps> = ({ steps, usage, live = false }) => {
   const [expanded, setExpanded] = useState(false);
@@ -31,19 +45,16 @@ export const TraceBlock: React.FC<TraceBlockProps> = ({ steps, usage, live = fal
   const totalSec = typeof usage?.total_ms === 'number' ? (usage.total_ms / 1000).toFixed(1) : null;
 
   return (
-    <div className="mb-3 rounded-xl bg-white/[0.03] border border-white/10 overflow-hidden">
-      {/* 折叠摘要行 */}
+    <div className="mb-2.5 rounded-xl bg-white/[0.04] border border-white/10 overflow-hidden">
+      {/* 完成后的折叠摘要行 */}
       {!live && (
         <button
           onClick={() => setExpanded((v) => !v)}
-          className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-white/[0.04] transition-colors"
+          className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-white/[0.05] transition-colors"
         >
-          <span className="text-xs text-primary-purple font-medium">
-            ✨ 思考过程
-            {totalSec && <span className="text-gray-500 font-normal">（{totalSec}s）</span>}
-          </span>
-          <span className="text-[10px] text-gray-500 truncate">
-            {steps.map((s) => s.name).join(' · ')}
+          <Sparkles size={13} className="text-primary-purple flex-shrink-0" />
+          <span className="text-xs text-gray-300 font-medium">
+            已深度思考{totalSec ? `（${totalSec}s）` : ''}
           </span>
           <ChevronDown
             size={14}
@@ -52,7 +63,7 @@ export const TraceBlock: React.FC<TraceBlockProps> = ({ steps, usage, live = fal
         </button>
       )}
 
-      {/* 展开的步骤明细 */}
+      {/* 展开的明细 */}
       <AnimatePresence initial={false}>
         {showDetail && (
           <motion.div
@@ -61,41 +72,55 @@ export const TraceBlock: React.FC<TraceBlockProps> = ({ steps, usage, live = fal
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="px-3 py-2.5 space-y-2">
-              <AnimatePresence>
-                {steps.map((step, idx) => {
-                  const isLast = idx === steps.length - 1;
-                  return (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="flex items-start gap-2 text-xs"
-                    >
-                      <span className="w-4 h-4 rounded-full bg-primary-purple/20 text-primary-purple flex items-center justify-center flex-shrink-0 text-[10px] font-bold mt-0.5">
-                        {idx + 1}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-gray-300 font-medium">
-                            {step.name === '🔍 检索知识库' && <Search size={10} className="inline mr-1 -mt-0.5" />}
-                            {step.name === '📄 读取完整简历' && <FileText size={10} className="inline mr-1 -mt-0.5" />}
-                            {step.name}
+            <div className="px-3 py-2.5">
+              {/* 思考中标题 */}
+              {live && (
+                <div className="flex items-center gap-2 mb-2.5">
+                  <Sparkles size={13} className="text-primary-purple" />
+                  <span className="text-xs text-primary-purple font-medium">深度思考中…</span>
+                </div>
+              )}
+
+              <div className="space-y-2.5">
+                <AnimatePresence>
+                  {steps.map((step, idx) => {
+                    const { icon, label } = stepMeta(step.name);
+                    const isLast = live && idx === steps.length - 1;
+                    const ms = fmtMs(step.ms);
+                    return (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-xs"
+                      >
+                        {/* 步骤行：状态图标 + 动词短语 + 耗时 */}
+                        <div className="flex items-center gap-2">
+                          {isLast ? (
+                            <Loader2 size={12} className="animate-spin text-primary-purple flex-shrink-0" />
+                          ) : (
+                            <CheckCircle2 size={12} className="text-gray-500 flex-shrink-0" />
+                          )}
+                          <span className={`flex items-center gap-1.5 ${isLast ? 'text-gray-200' : 'text-gray-400'}`}>
+                            {icon}
+                            {isLast ? `${label}…` : label}
                           </span>
-                          {typeof step.ms === 'number' && step.ms > 0 && (
-                            <span className="text-[10px] text-gray-500">{step.ms}ms</span>
-                          )}
-                          {live && isLast && (
-                            <Loader2 size={10} className="inline animate-spin text-primary-purple" />
-                          )}
+                          {!isLast && ms && <span className="text-[10px] text-gray-500 tabular-nums">{ms}</span>}
                         </div>
+
+                        {/* 检索词子行 */}
+                        {typeof step.detail?.query === 'string' && (step.detail.query as string).trim() && (
+                          <div className="mt-1 ml-6 text-[11px] text-gray-500 italic truncate">
+                            「{(step.detail.query as string).trim()}」
+                          </div>
+                        )}
 
                         {/* 检索命中明细 */}
                         {Array.isArray(step.detail?.hits) && (step.detail.hits as RetrievalHit[]).length > 0 && (
-                          <div className="mt-1 space-y-1">
-                            {(step.detail.hits as RetrievalHit[]).map((hit, i) => (
+                          <div className="mt-1.5 ml-6 space-y-1">
+                            {(step.detail.hits as RetrievalHit[]).slice(0, 4).map((hit, i) => (
                               <div key={i} className="flex items-center gap-2">
-                                <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden min-w-[60px]">
+                                <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden min-w-[60px]">
                                   <div
                                     className="h-full bg-gradient-to-r from-primary-purple to-primary-violet"
                                     style={{ width: `${Math.round((hit.score ?? 0) * 100)}%` }}
@@ -105,33 +130,33 @@ export const TraceBlock: React.FC<TraceBlockProps> = ({ steps, usage, live = fal
                                   {hit.title || hit.source}
                                 </span>
                                 <span className="text-[10px] text-primary-purple tabular-nums">
-                                  {(hit.score ?? 0).toFixed(3)}
+                                  {(hit.score ?? 0).toFixed(2)}
                                 </span>
                               </div>
                             ))}
                           </div>
                         )}
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
 
-              {/* 统计徽章 */}
-              {usage && live && (
-                <div className="flex gap-2 pt-1">
-                  {typeof usage.total_ms === 'number' && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400">
-                      ⏱ {(usage.total_ms / 1000).toFixed(1)}s
-                    </span>
-                  )}
-                  {typeof usage.tool_rounds === 'number' && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400">
-                      🔧 {usage.tool_rounds} 轮工具
-                    </span>
-                  )}
-                </div>
-              )}
+                {/* 统计徽章 */}
+                {usage && live && (
+                  <div className="flex gap-2 pt-1">
+                    {typeof usage.total_ms === 'number' && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400">
+                        ⏱ {(usage.total_ms / 1000).toFixed(1)}s
+                      </span>
+                    )}
+                    {typeof usage.tool_rounds === 'number' && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400">
+                        🔧 {usage.tool_rounds} 轮工具
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </motion.div>
         )}
