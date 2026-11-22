@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Bot, User, Loader2, Mic, MicOff, Volume2, VolumeX, BrainCircuit } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { DigitalHuman, AvatarState, DigitalHumanHandle } from './DigitalHuman';
-import { AgentTracePanel } from './AgentTracePanel';
+import { TraceBlock } from './AgentTracePanel';
 import { useSpeechRecognition } from '../../hooks/useSpeech';
 import { callAgent, type AgentTraceStep, type AgentUsage, type ChatHistoryMessage } from '../../config/agent';
 
@@ -13,6 +13,9 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  /** Agent 思考过程（内嵌在气泡顶部，完成后可折叠） */
+  trace?: AgentTraceStep[];
+  usage?: AgentUsage | null;
 }
 
 /** 轻量 Markdown → HTML：用 <br/> 控制换行，不依赖 CSS margin */
@@ -112,9 +115,9 @@ You can type or click the mic to ask by voice!`,
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [traceSteps, setTraceSteps] = useState<AgentTraceStep[]>([]);
   const [traceUsage, setTraceUsage] = useState<AgentUsage | null>(null);
-  const [showTrace, setShowTrace] = useState(false);
-  // 用户手动关闭轨迹面板后，本次会话不再自动展开（手动点开可恢复自动展开）
-  const traceManuallyClosedRef = useRef(false);
+  /** 当前正在流式输出的 assistant 消息 id（思考过程实时内嵌到该气泡） */
+  const [liveMsgId, setLiveMsgId] = useState<string | null>(null);
+  const activeStreamIdRef = useRef<string | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const duixDigitalHumanRef = useRef<DigitalHumanHandle>(null);
   const muteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -201,10 +204,23 @@ You can type or click the mic to ask by voice!`,
       const response = await callAgent(userMessage, history, signal, (event) => {
         if (event.type === 'trace') {
           setTraceSteps((prev) => [...prev, event.step]);
+          // 思考过程实时内嵌到正在流式输出的气泡
+          const sid = activeStreamIdRef.current;
+          if (sid) {
+            setMessages((prev) =>
+              prev.map((m) => (m.id === sid ? { ...m, trace: [...(m.trace || []), event.step] } : m))
+            );
+          }
         } else if (event.type === 'answer') {
           onDelta?.(event.delta);
         } else if (event.type === 'done') {
           setTraceUsage(event.usage);
+          const sid = activeStreamIdRef.current;
+          if (sid) {
+            setMessages((prev) =>
+              prev.map((m) => (m.id === sid ? { ...m, usage: event.usage } : m))
+            );
+          }
         }
       });
 
@@ -254,8 +270,6 @@ You can type or click the mic to ask by voice!`,
       setIsSpeaking(false); // 中断后重置说话状态
       setTraceSteps([]);    // 重置 Agent 执行轨迹
       setTraceUsage(null);
-      // 自动展开轨迹面板（展示 Agent 思考过程；用户手动关闭后不再自动弹出）
-      if (!traceManuallyClosedRef.current) setShowTrace(true);
 
       // 创建新的 AbortController
       const controller = new AbortController();
@@ -272,9 +286,11 @@ You can type or click the mic to ask by voice!`,
           if (!streamCreated) {
             streamCreated = true;
             setIsLoading(false);
+            activeStreamIdRef.current = streamId;
+            setLiveMsgId(streamId);
             setMessages((prev) => [
               ...prev,
-              { id: streamId, role: 'assistant', content: delta, timestamp: new Date() },
+              { id: streamId, role: 'assistant', content: delta, timestamp: new Date(), trace: [] },
             ]);
           } else {
             setMessages((prev) =>
@@ -293,6 +309,8 @@ You can type or click the mic to ask by voice!`,
             role: 'assistant',
             content: response,
             timestamp: new Date(),
+            trace: traceSteps.length ? [...traceSteps] : [],
+            usage: traceUsage,
           };
           setMessages((prev) => [...prev, assistantMessage]);
         }
@@ -311,6 +329,8 @@ You can type or click the mic to ask by voice!`,
         if (abortRef.current === controller) {
           abortRef.current = null;
         }
+        activeStreamIdRef.current = null;
+        setLiveMsgId(null);
         setIsLoading(false);
       }
     },
@@ -363,26 +383,6 @@ You can type or click the mic to ask by voice!`,
                   : 'Self-built RAG + Agent · Text & Voice'}
               </p>
             </div>
-            {/* Agent 过程可视化开关（可开关调试面板） */}
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => {
-                if (showTrace) {
-                  traceManuallyClosedRef.current = true; // 手动关闭 → 不再自动弹出
-                } else {
-                  traceManuallyClosedRef.current = false; // 手动打开 → 恢复自动展开
-                }
-                setShowTrace((v) => !v);
-              }}
-              className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
-                showTrace
-                  ? 'bg-primary-purple text-white'
-                  : 'bg-primary-purple/20 text-primary-purple'
-              }`}
-              title={isZh ? '看看我是怎么想的（Agent 执行轨迹）' : 'Show how I think (Agent trace)'}
-            >
-              <BrainCircuit size={16} />
-            </motion.button>
             {/* TTS 开关 — 静音后 10 秒自动回到 idle，期间可随时恢复 */}
             {isTtsSupported && (
               <motion.button
@@ -421,20 +421,6 @@ You can type or click the mic to ask by voice!`,
             )}
           </div>
         </div>
-
-        {/* Agent 执行轨迹面板（可开关） */}
-        <AnimatePresence>
-          {showTrace && (
-            <AgentTracePanel
-              steps={traceSteps}
-              usage={traceUsage}
-              onClose={() => {
-                setShowTrace(false);
-                traceManuallyClosedRef.current = true;
-              }}
-            />
-          )}
-        </AnimatePresence>
 
         {/* 主内容区域：数字人 + 聊天 */}
         <div className="flex-1 flex overflow-hidden">
@@ -513,6 +499,13 @@ You can type or click the mic to ask by voice!`,
                       <Bot size={16} className="text-primary-purple" />
                     )}
                   </div>
+                  {message.role === 'assistant' && !!message.trace?.length && (
+                    <TraceBlock
+                      steps={message.trace}
+                      usage={message.usage ?? null}
+                      live={message.id === liveMsgId}
+                    />
+                  )}
                   <div
                     className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                       message.role === 'user'
@@ -555,6 +548,11 @@ You can type or click the mic to ask by voice!`,
                         transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
                       />
                     </div>
+                    {traceSteps.length > 0 && (
+                      <div className="mt-3 -mx-1">
+                        <TraceBlock steps={traceSteps} usage={null} live />
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
