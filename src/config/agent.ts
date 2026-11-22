@@ -15,7 +15,7 @@ const isDev = import.meta.env.DEV;
 export const AGENT_API = {
   // 本地: /api/agent → Vite proxy → wrangler dev (http://127.0.0.1:8787)
   // 生产: resume-agent Worker（鉴权、知识库、LLM 全部在 Worker 内，前端零密钥）
-  endpoint: isDev ? '/api/agent' : 'https://resume-agent.25434675.workers.dev/chat',
+  endpoint: isDev ? '/api/agent' : 'https://resume-agent.suzinao-apply.workers.dev/chat',
 } as const;
 
 export interface AgentTraceStep {
