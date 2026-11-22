@@ -118,6 +118,8 @@ You can type or click the mic to ask by voice!`,
   /** 当前正在流式输出的 assistant 消息 id（思考过程实时内嵌到该气泡） */
   const [liveMsgId, setLiveMsgId] = useState<string | null>(null);
   const activeStreamIdRef = useRef<string | null>(null);
+  /** trace 事件镜像 ref（消息创建于首个 delta，需带回此前积累的思考步骤） */
+  const traceStepsRef = useRef<AgentTraceStep[]>([]);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const duixDigitalHumanRef = useRef<DigitalHumanHandle>(null);
   const muteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -203,6 +205,7 @@ You can type or click the mic to ask by voice!`,
 
       const response = await callAgent(userMessage, history, signal, (event) => {
         if (event.type === 'trace') {
+          traceStepsRef.current = [...traceStepsRef.current, event.step];
           setTraceSteps((prev) => [...prev, event.step]);
           // 思考过程实时内嵌到正在流式输出的气泡
           const sid = activeStreamIdRef.current;
@@ -218,7 +221,7 @@ You can type or click the mic to ask by voice!`,
           const sid = activeStreamIdRef.current;
           if (sid) {
             setMessages((prev) =>
-              prev.map((m) => (m.id === sid ? { ...m, usage: event.usage } : m))
+              prev.map((m) => (m.id === sid ? { ...m, usage: event.usage, trace: [...traceStepsRef.current] } : m))
             );
           }
         }
@@ -268,6 +271,7 @@ You can type or click the mic to ask by voice!`,
       setInput('');
       setIsLoading(true);
       setIsSpeaking(false); // 中断后重置说话状态
+      traceStepsRef.current = [];
       setTraceSteps([]);    // 重置 Agent 执行轨迹
       setTraceUsage(null);
 
@@ -290,7 +294,7 @@ You can type or click the mic to ask by voice!`,
             setLiveMsgId(streamId);
             setMessages((prev) => [
               ...prev,
-              { id: streamId, role: 'assistant', content: delta, timestamp: new Date(), trace: [] },
+              { id: streamId, role: 'assistant', content: delta, timestamp: new Date(), trace: [...traceStepsRef.current] },
             ]);
           } else {
             setMessages((prev) =>
@@ -309,7 +313,7 @@ You can type or click the mic to ask by voice!`,
             role: 'assistant',
             content: response,
             timestamp: new Date(),
-            trace: traceSteps.length ? [...traceSteps] : [],
+            trace: [...traceStepsRef.current],
             usage: traceUsage,
           };
           setMessages((prev) => [...prev, assistantMessage]);

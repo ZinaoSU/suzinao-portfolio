@@ -26,7 +26,7 @@ export const TraceBlock: React.FC<TraceBlockProps> = ({ steps, usage, live = fal
   const [expanded, setExpanded] = useState(false);
   const showDetail = live || expanded;
 
-  if (!steps.length && !live) return null;
+  if (!steps.length) return null;
 
   const totalSec = typeof usage?.total_ms === 'number' ? (usage.total_ms / 1000).toFixed(1) : null;
 
