@@ -480,7 +480,7 @@ You can type or click the mic to ask by voice!`,
           {/* 右侧：对话区域 */}
           <div className="flex-1 flex flex-col min-w-0">
             {/* Messages */}
-            <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-5 space-y-4">
+            <div ref={chatContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden p-5 space-y-4">
               {messages.map((message) => (
                 <motion.div
                   key={message.id}
@@ -534,7 +534,7 @@ You can type or click the mic to ask by voice!`,
                   <div className="w-8 h-8 rounded-full bg-dark-cardLight border border-white/10 flex items-center justify-center">
                     <Bot size={16} className="text-primary-purple" />
                   </div>
-                  <div className="bg-dark-cardLight rounded-2xl rounded-tl-sm px-4 py-3">
+                  <div className="max-w-[80%] min-w-0 bg-dark-cardLight rounded-2xl rounded-tl-sm px-4 py-3">
                     <div className="flex gap-1.5">
                       <motion.div
                         className="w-2 h-2 bg-primary-purple rounded-full"

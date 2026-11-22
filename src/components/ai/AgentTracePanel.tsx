@@ -72,7 +72,7 @@ export const TraceBlock: React.FC<TraceBlockProps> = ({ steps, usage, live = fal
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="px-3 py-2.5">
+            <div className="px-3 py-2.5 min-w-0">
               {/* 思考中标题 */}
               {live && (
                 <div className="flex items-center gap-2 mb-2.5">
