@@ -17,6 +17,34 @@ export interface Experience {
 
 export const experienceData: Experience[] = [
   {
+    id: 'hikvision',
+    company: 'Hikvision (Hong Kong)',
+    companyZh: '海康威视（香港）',
+    role: 'Solutions Engineer',
+    roleZh: '解决方案工程师',
+    period: '2026.06 - 2026.10',
+    location: 'Hong Kong',
+    achievements: [
+      'Led requirement analysis, solution design and rollout of the WhatsApp AI customer service product for HK/Macau B2B clients, enabling 7×24 AI self-service',
+      'Built localized RAG knowledge base from manuals, FAQs and wiring diagrams, achieving 40% self-service deflection and 85%+ AI answer accuracy',
+      'Established metrics monitoring (deflection, first response, KB hit rate) and iterated via prompt tuning and retrieval optimization, cutting handling time by 20%',
+      'Delivered 30+ ProAV solutions across LED displays, interactive panels and professional audio; led CIC tender bid with full configuration of 18 product categories',
+    ],
+    achievementsZh: [
+      '参与海康威视香港AI产品部智能客服项目建设，负责WhatsApp智能客服产品的需求梳理、方案设计与落地推进，实现港澳B端客户7×24小时AI自助服务',
+      '负责港澳本地化RAG知识库建设，对操作手册、FAQ、接线图等技术资料结构化清洗、切片、分类打标，常规技术咨询独立闭环拦截率达40%，AI回答准确率提升至85%+',
+      '建立问题拦截率、首次响应时间、知识命中率、转人工率核心指标监控，通过Prompt优化、检索权重调整、召回阈值优化持续迭代AI效果，平均问题处理时长缩短20%',
+      '参与ProAV业务售前支持，覆盖LED商用显示屏、交互平板、专业音频三条产品线，独立输出30+份行业解决方案',
+      '主导CIC户外训练场地AV系统投标项目，独立研读英文招标文件，完成18类产品型号配单与技术参数核对',
+    ],
+    highlight: '40% Deflection · 85%+ Accuracy',
+    highlightZh: '40%问题拦截 · 85%+准确率',
+    images: [
+      assetUrl('/images/hikvision-1.jpg'),
+      assetUrl('/images/hikvision-2.jpg'),
+    ],
+  },
+  {
     id: 'cims',
     company: 'Centre for Intelligent Manufacturing Systems',
     companyZh: '香港智能制造中心',
