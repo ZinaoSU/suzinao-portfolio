@@ -113,6 +113,8 @@ You can type or click the mic to ask by voice!`,
   const [traceSteps, setTraceSteps] = useState<AgentTraceStep[]>([]);
   const [traceUsage, setTraceUsage] = useState<AgentUsage | null>(null);
   const [showTrace, setShowTrace] = useState(false);
+  // 用户手动关闭轨迹面板后，本次会话不再自动展开（手动点开可恢复自动展开）
+  const traceManuallyClosedRef = useRef(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const duixDigitalHumanRef = useRef<DigitalHumanHandle>(null);
   const muteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -252,6 +254,8 @@ You can type or click the mic to ask by voice!`,
       setIsSpeaking(false); // 中断后重置说话状态
       setTraceSteps([]);    // 重置 Agent 执行轨迹
       setTraceUsage(null);
+      // 自动展开轨迹面板（展示 Agent 思考过程；用户手动关闭后不再自动弹出）
+      if (!traceManuallyClosedRef.current) setShowTrace(true);
 
       // 创建新的 AbortController
       const controller = new AbortController();
@@ -362,7 +366,14 @@ You can type or click the mic to ask by voice!`,
             {/* Agent 过程可视化开关（可开关调试面板） */}
             <motion.button
               whileTap={{ scale: 0.9 }}
-              onClick={() => setShowTrace((v) => !v)}
+              onClick={() => {
+                if (showTrace) {
+                  traceManuallyClosedRef.current = true; // 手动关闭 → 不再自动弹出
+                } else {
+                  traceManuallyClosedRef.current = false; // 手动打开 → 恢复自动展开
+                }
+                setShowTrace((v) => !v);
+              }}
               className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
                 showTrace
                   ? 'bg-primary-purple text-white'
@@ -414,7 +425,14 @@ You can type or click the mic to ask by voice!`,
         {/* Agent 执行轨迹面板（可开关） */}
         <AnimatePresence>
           {showTrace && (
-            <AgentTracePanel steps={traceSteps} usage={traceUsage} onClose={() => setShowTrace(false)} />
+            <AgentTracePanel
+              steps={traceSteps}
+              usage={traceUsage}
+              onClose={() => {
+                setShowTrace(false);
+                traceManuallyClosedRef.current = true;
+              }}
+            />
           )}
         </AnimatePresence>
 
