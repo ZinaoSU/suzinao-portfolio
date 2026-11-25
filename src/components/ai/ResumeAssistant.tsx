@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Bot, User, Loader2, Mic, MicOff, Volume2, VolumeX, BrainCircuit } from 'lucide-react';
+import { Send, Bot, User, Loader2, Mic, MicOff, Volume2, VolumeX, BrainCircuit, Sparkles } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { DigitalHuman, AvatarState, DigitalHumanHandle } from './DigitalHuman';
 import { TraceBlock } from './AgentTracePanel';
 import { useSpeechRecognition } from '../../hooks/useSpeech';
-import { callAgent, type AgentTraceStep, type AgentUsage, type ChatHistoryMessage } from '../../config/agent';
+import { callAgent, fetchSuggestions, type AgentTraceStep, type AgentUsage, type ChatHistoryMessage } from '../../config/agent';
 
 interface Message {
   id: string;
@@ -16,6 +16,8 @@ interface Message {
   /** Agent 思考过程（内嵌在气泡顶部，完成后可折叠） */
   trace?: AgentTraceStep[];
   usage?: AgentUsage | null;
+  /** 回答完成后生成的 3 个联想提问 */
+  suggestions?: string[];
 }
 
 /** 轻量 Markdown → HTML：用 <br/> 控制换行，不依赖 CSS margin */
@@ -319,6 +321,14 @@ You can type or click the mic to ask by voice!`,
           setMessages((prev) => [...prev, assistantMessage]);
         }
 
+        // 联想提问：独立请求，不阻塞语音播报；失败静默
+        void fetchSuggestions(text, response, controller.signal).then((questions) => {
+          if (!questions.length || controller.signal.aborted) return;
+          setMessages((prev) =>
+            prev.map((m) => (m.id === streamId ? { ...m, suggestions: questions } : m))
+          );
+        });
+
         // 用数字人说话（edge-tts-proxy，音质接近 Azure Neural）
         setIsSpeaking(true);
         duixDigitalHumanRef.current?.speak(response);
@@ -363,6 +373,14 @@ You can type or click the mic to ask by voice!`,
     if (isSpeaking) return 'speaking';
     return 'idle';
   };
+
+  /** 只有"最新一条回答"下面展示联想提问，避免历史消息堆满气泡 */
+  const lastAssistantId = (() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'assistant') return messages[i].id;
+    }
+    return null;
+  })();
 
   return (
     <motion.div
@@ -526,6 +544,38 @@ You can type or click the mic to ask by voice!`,
                             : message.content,
                       }}
                     />
+
+                    {/* 联想提问气泡：仅最新一条回答、且不在生成中时展示 */}
+                    {message.role === 'assistant' &&
+                      message.id === lastAssistantId &&
+                      message.id !== liveMsgId &&
+                      !isLoading &&
+                      !!message.suggestions?.length && (
+                        <div className="mt-3.5 pt-3 border-t border-white/[0.07]">
+                          <div className="flex items-center gap-1.5 mb-2 text-[10px] font-medium tracking-wide text-gray-500">
+                            <Sparkles size={11} className="text-primary-purple" />
+                            {isZh ? '你可能还想问' : 'You might also ask'}
+                          </div>
+                          <div className="flex flex-col gap-1.5">
+                            {message.suggestions.map((q, idx) => (
+                              <motion.button
+                                key={`${message.id}-s${idx}`}
+                                type="button"
+                                initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                transition={{ delay: 0.07 * idx, duration: 0.26, ease: 'easeOut' }}
+                                whileHover={{ x: 2 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => handleSendWithText(q)}
+                                className="group flex items-start gap-2 text-left text-xs leading-snug px-3 py-2 rounded-xl border border-primary-purple/25 bg-primary-purple/[0.07] text-gray-300 hover:text-white hover:border-primary-purple/60 hover:bg-primary-purple/15 transition-colors"
+                              >
+                                <span className="text-primary-purple/70 group-hover:text-primary-purple text-[11px] mt-[1px] transition-colors">↳</span>
+                                <span className="flex-1">{q}</span>
+                              </motion.button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                   </div>
                 </motion.div>
               ))}

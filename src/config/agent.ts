@@ -16,6 +16,8 @@ export const AGENT_API = {
   // 本地: /api/agent → Vite proxy → wrangler dev (http://127.0.0.1:8787)
   // 生产: resume-agent Worker（鉴权、知识库、LLM 全部在 Worker 内，前端零密钥）
   endpoint: isDev ? '/api/agent' : 'https://resume-agent.suzinao-apply.workers.dev/chat',
+  // 联想提问接口（回答完成后单独请求，不阻塞语音播报）
+  suggestEndpoint: isDev ? '/api/agent-suggest' : 'https://resume-agent.suzinao-apply.workers.dev/suggest',
 } as const;
 
 export interface AgentTraceStep {
@@ -99,4 +101,31 @@ export async function callAgent(
   }
 
   return result;
+}
+
+/**
+ * 生成 3 个联想提问（回答完成后调用，失败静默返回空数组）
+ *
+ * @param question 访客刚问的问题
+ * @param answer   助手给出的回答（用于往下延伸）
+ * @param signal   AbortSignal（新提问时取消上一次请求）
+ */
+export async function fetchSuggestions(
+  question: string,
+  answer: string,
+  signal?: AbortSignal
+): Promise<string[]> {
+  try {
+    const res = await fetch(AGENT_API.suggestEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question, answer }),
+      signal,
+    });
+    if (!res.ok) return [];
+    const data = (await res.json()) as { questions?: string[] };
+    return Array.isArray(data.questions) ? data.questions.slice(0, 3) : [];
+  } catch {
+    return [];
+  }
 }
