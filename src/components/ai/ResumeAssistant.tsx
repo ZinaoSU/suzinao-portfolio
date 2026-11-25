@@ -85,29 +85,40 @@ function renderSimpleMarkdown(text: string): string {
   return out.join('');
 }
 
+const WELCOME_ID = '1';
+
+/** 欢迎语下方的快捷提问（点击即发送） */
+const WELCOME_QUICK_ASKS = {
+  zh: [
+    '简单介绍一下苏梓铙吧~',
+    '对她来讲成长最多的一段经历是什么？',
+    '她的职业发展计划是怎样的？',
+  ],
+  en: [
+    'Tell me about Su Zinao in a nutshell',
+    'Which experience helped her grow the most?',
+    'What is her career plan?',
+  ],
+} as const;
+
 export const ResumeAssistant: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const { t, i18n } = useTranslation();
   const isZh = i18n.language === 'zh';
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: '1',
+      id: WELCOME_ID,
       role: 'assistant',
       content: isZh
-        ? `你好！我是苏梓铙的数字人简历助手 👋你可以把我当成一个会说话的简历——随便问，我能告诉你关于她的几乎所有公开信息：🎯 想聊实习经历？她有香港智能制造中心AI 3D攀岩相机、法大大的 AI 合规助手客服机器人、北京计算美学商用AIGC生图，还有多项项目经历。你也可以问我任何关于她的问题，比如：
+        ? `你好！我是苏梓铙的数字人简历助手 👋你可以把我当成一个会说话的简历——随便问，我能告诉你关于她的几乎所有公开信息：
 
-简单介绍一下苏梓铙吧~
-对她来讲成长最多的一段经历是什么？
-她的职业发展计划是怎样的？
+🎯 实习经历：海康威视（香港）解决方案工程师，负责 WhatsApp AI 智能客服与港澳本地化 RAG 知识库（问题拦截率 40%、回答准确率 85%+）；还有香港智能制造中心的 AI 3D 攀岩相机、法大大 AI 合规助手客服机器人、北京计算美学商用 AIGC 生图等。
 
-可以打字或者点击麦克风语音提问哦！`
-        : `Hi! I'm Su Zinao's Digital Human Resume Assistant! Ask me anything about her, such as:
+👇 下面几个问题可以直接点，也可以打字或点麦克风语音提问哦！`
+        : `Hi! I'm Su Zinao's Digital Human Resume Assistant 👋 Treat me as a resume that can talk. Ask me anything about her:
 
-• What project experience does she have?
-• What AI technologies has she used?
-• What's her professional background?
-• How can I contact her?
+🎯 Experience highlights: Solutions Engineer at Hikvision (Hong Kong) — WhatsApp AI customer service and a localized RAG knowledge base (40% deflection, 85%+ answer accuracy); AI 3D climbing camera at HK Smart Manufacturing Center; AI compliance assistant chatbot at Fadada; commercial AIGC image generation at Nolibox.
 
-You can type or click the mic to ask by voice!`,
+👇 Tap a question below, or type / use the mic to ask by voice!`,
       timestamp: new Date(),
     },
   ]);
@@ -544,6 +555,37 @@ You can type or click the mic to ask by voice!`,
                             : message.content,
                       }}
                     />
+
+                    {/* 欢迎语快捷提问：仅在首次进入（还没有对话）时展示 */}
+                    {message.role === 'assistant' &&
+                      message.id === WELCOME_ID &&
+                      messages.length === 1 &&
+                      !isLoading && (
+                        <div className="mt-3.5 pt-3 border-t border-white/[0.07]">
+                          <div className="flex items-center gap-1.5 mb-2 text-[10px] font-medium tracking-wide text-gray-500">
+                            <Sparkles size={11} className="text-primary-purple" />
+                            {isZh ? '快捷提问' : 'Quick questions'}
+                          </div>
+                          <div className="flex flex-col gap-1.5">
+                            {WELCOME_QUICK_ASKS[isZh ? 'zh' : 'en'].map((q, idx) => (
+                              <motion.button
+                                key={`welcome-q${idx}`}
+                                type="button"
+                                initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                transition={{ delay: 0.07 * idx, duration: 0.26, ease: 'easeOut' }}
+                                whileHover={{ x: 2 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => handleSendWithText(q)}
+                                className="group flex items-start gap-2 text-left text-xs leading-snug px-3 py-2 rounded-xl border border-primary-purple/25 bg-primary-purple/[0.07] text-gray-300 hover:text-white hover:border-primary-purple/60 hover:bg-primary-purple/15 transition-colors"
+                              >
+                                <span className="text-primary-purple/70 group-hover:text-primary-purple text-[11px] mt-[1px] transition-colors">↳</span>
+                                <span className="flex-1">{q}</span>
+                              </motion.button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
                     {/* 联想提问气泡：仅最新一条回答、且不在生成中时展示 */}
                     {message.role === 'assistant' &&
