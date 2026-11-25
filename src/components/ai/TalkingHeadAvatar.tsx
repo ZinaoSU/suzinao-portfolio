@@ -429,7 +429,7 @@ const SceneContent: React.FC<{
 };
 
 // ===== edge-tts-proxy TTS：微软 Edge 神经语音（来自 AI_GUIDE.md） =====
-const EDGE_TTS_BASE = 'https://edge-tts-proxy.3312428491.workers.dev';
+const EDGE_TTS_BASE = 'https://edge-tts-proxy.suzinao-apply.workers.dev'; // 旧账户 3312428491 已不可访问，2026-11 迁移并修复 Sec-MS-GEC v2
 const TTS_MAX_CHARS = 2000; // AI_GUIDE: 单次上限 2000 字符
 
 /** 分句（不超过 MAX_CHARS，优先在句末断） */
